@@ -151,11 +151,17 @@ jobs:
           set -euo pipefail
           mkdir -p release
           find bins -name '*.merged.bin' -exec cp -f {} release/ \;
-          find common -name version.json -exec cp -f {} release/payload.json \;
-          test -f release/payload.json
           PAYLOAD="$(tr -d '[:space:]' < common/payload-version.txt 2>/dev/null || echo unknown)"
           VER="${PAYLOAD%%(*}"
           VER="${VER:-unknown}"
+          # Extra metadata for the flasher. Never block a firmware release on
+          # it: Pages also falls back to the packed copy on its own.
+          META="$(find common -name version.json -print -quit)"
+          if [ -n "$META" ]; then
+            cp -f "$META" release/payload.json
+          else
+            printf '{"payload": "%s"}\n' "$VER" > release/payload.json
+          fi
           TITLE="itsPLK ${PAYLOAD}"
           NOTES="itsPLK/ps5-webkit-autoloader ${PAYLOAD}. Firmware ${GITHUB_SHA::12}. Flash at 0x0. S2: esp32-arduino.s2.merged.bin."
           ls -lh release
