@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stage srbraboo/ps5-webkit-autoloader pages into host/packed.
+"""Stage itsPLK/ps5-webkit-autoloader pages into host/packed.
 
 Keeps the ESP32 split-AppCache installer shells (the chip cannot inject
 manifest= from ?exploit= like the PC host). Replaces the chain HTML and
@@ -14,6 +14,7 @@ import re
 import shutil
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -42,13 +43,11 @@ def read_version(web: Path) -> tuple[str, str]:
 
 
 def rewrite(text: str, version: str, app_dir: str, build_time: str) -> str:
-    text = text.replace("github.com/itsPLK/ps5-webkit-autoloader",
-                        "github.com/srbraboo/ps5-webkit-autoloader")
-    text = re.sub(r"v0\.6\.1 by PLK \(built [^)]+\)",
-                  f"v{version} (built {build_time})", text)
+    text = re.sub(r"v\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)? by PLK \(built [^)]+\)",
+                  f"v{version} by PLK (built {build_time})", text)
     text = re.sub(r"var version = '[^']+';", f"var version = '{version}';", text)
     text = re.sub(r"var base = '/app/[^']+/';", f"var base = '/app/{app_dir}/';", text)
-    text = re.sub(r"/app/0\.6\.1/", f"/app/{app_dir}/", text)
+    text = re.sub(r"/app/\d+\.\d+\.\d+/", f"/app/{app_dir}/", text)
     return text
 
 
@@ -57,7 +56,7 @@ def write_manifest(path: Path, version: str, build_time: str, app_dir: str,
     html = f"{chain}.html"
     path.write_text(
         "CACHE MANIFEST\n"
-        f"# WebKit Autoloader v{version} (built {build_time}) - srbraboo pack\n"
+        f"# WebKit Autoloader v{version} (built {build_time})\n"
         "\n"
         "CACHE:\n"
         f"/app/{app_dir}/{html}\n"
@@ -85,7 +84,7 @@ def main() -> int:
     web = args.web.resolve()
     out = args.out.resolve()
     if not (web / "Makefile").is_file():
-        raise SystemExit(f"srbraboo tree not found: {web}")
+        raise SystemExit(f"upstream tree not found: {web}")
 
     if not args.skip_build:
         run(["git", "submodule", "update", "--init",
@@ -111,10 +110,15 @@ def main() -> int:
 
     version, base = read_version(web)
     app_dir = base
-    build_time = subprocess.run(
+    stamp = subprocess.run(
         ["git", "-C", str(web), "log", "-1", "--format=%cI"],
         check=True, capture_output=True, text=True,
-    ).stdout.strip() or "unknown"
+    ).stdout.strip()
+    try:
+        build_time = datetime.fromisoformat(stamp).astimezone(
+            timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    except ValueError:
+        build_time = stamp or "unknown"
     pages = {
         "poops": web / "build" / "autoloader" / "poops.html",
         "relapse": web / "build" / "autoloader" / "relapse.html",
