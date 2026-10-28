@@ -37,10 +37,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Checkout srbraboo payload
+      - name: Checkout itsPLK payload
         uses: actions/checkout@v4
         with:
-          repository: srbraboo/ps5-webkit-autoloader
+          repository: itsPLK/ps5-webkit-autoloader
           path: webkit-autoloader
           submodules: recursive
 
@@ -65,8 +65,8 @@ jobs:
           sha=$(git -C webkit-autoloader rev-parse --short HEAD)
           echo "${base} (${sha})" | tee payload-version.txt
 
-      - name: Pack srbraboo payload
-        run: bash ./pack/pack_srbraboo.sh
+      - name: Pack payload
+        run: bash ./pack/pack_payload.sh
 
       - name: Build shared image
         run: make common
@@ -153,8 +153,8 @@ jobs:
           PAYLOAD="$(tr -d '[:space:]' < common/payload-version.txt 2>/dev/null || echo unknown)"
           VER="${PAYLOAD%%(*}"
           VER="${VER:-unknown}"
-          TITLE="srbraboo ${PAYLOAD}"
-          NOTES="srbraboo/ps5-webkit-autoloader ${PAYLOAD}. Firmware ${GITHUB_SHA::12}. Flash at 0x0. S2: esp32-arduino.s2.merged.bin."
+          TITLE="itsPLK ${PAYLOAD}"
+          NOTES="itsPLK/ps5-webkit-autoloader ${PAYLOAD}. Firmware ${GITHUB_SHA::12}. Flash at 0x0. S2: esp32-arduino.s2.merged.bin."
           ls -lh release
           publish() {
             local tag="$1"
