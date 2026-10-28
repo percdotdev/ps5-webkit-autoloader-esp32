@@ -79,6 +79,7 @@ jobs:
             build/tls/server_certs.h
             build/dns-library
             build/common/esp32-arduino.littlefs.bin
+            host/packed/version.json
             payload-version.txt
 
   compile:
@@ -150,6 +151,8 @@ jobs:
           set -euo pipefail
           mkdir -p release
           find bins -name '*.merged.bin' -exec cp -f {} release/ \;
+          find common -name version.json -exec cp -f {} release/payload.json \;
+          test -f release/payload.json
           PAYLOAD="$(tr -d '[:space:]' < common/payload-version.txt 2>/dev/null || echo unknown)"
           VER="${PAYLOAD%%(*}"
           VER="${VER:-unknown}"
@@ -160,13 +163,13 @@ jobs:
             local tag="$1"
             if gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1; then
               gh release edit "$tag" --repo "${{ github.repository }}" --title "$TITLE" --notes "$NOTES"
-              gh release upload "$tag" --repo "${{ github.repository }}" --clobber release/*.merged.bin
+              gh release upload "$tag" --repo "${{ github.repository }}" --clobber release/*.merged.bin release/payload.json
             else
               gh release create "$tag" \
                 --repo "${{ github.repository }}" \
                 --title "$TITLE" \
                 --notes "$NOTES" \
-                release/*.merged.bin
+                release/*.merged.bin release/payload.json
             fi
           }
           publish "$VER"

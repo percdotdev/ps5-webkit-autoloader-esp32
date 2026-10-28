@@ -54,6 +54,15 @@ Next time you only need the board plugged in, Wi-Fi still on `ESP32_PORTAL`, the
 
 Relapse needs the IP the board hands out (the PS5 must stay on `ESP32_PORTAL`). Poops does not need a network interface.
 
+## Check the install
+
+The board serves two diagnostic pages while you are on `ESP32_PORTAL`. The installer links both from the exploit picker, and the flasher links the same pages from its troubleshooting panel.
+
+- `http://192.168.4.1/status.html` shows the payload version, board, free LittleFS, uptime, the last chain the console requested and the last request that failed. The raw data is at `/status.json`.
+- `http://192.168.4.1/selftest.html` fetches `__complete__`, both chain pages, the three payload binaries and both AppCache manifests, then reports what is missing.
+
+The web flasher verifies the write with the chip's own MD5 command and shows the digest in the log. It also compares the bundled payload with the latest [itsPLK release](https://github.com/itsPLK/ps5-webkit-autoloader/releases) and says when a newer payload is available.
+
 ## Build from source
 
 ```sh

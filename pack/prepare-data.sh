@@ -95,6 +95,7 @@ if [ "$MODE" = minimize ]; then
 else
     echo "Compressing minimized files for LittleFS..."
     # AppCache manifests stay plain for dynamic ESP32 version responses.
+    # version.json stays plain: the firmware reads it with LittleFS, not gzip.
     while IFS= read -r -d '' file; do
         gzip -9 -n "$file"
     done < <(find "$OUTPUT_DIR" -type f \( \
@@ -106,5 +107,5 @@ else
         -name '*.css' -o \
         -name 'version' -o \
         -name '*.json' \
-    \) -print0)
+    \) ! -name 'version.json' -print0)
 fi

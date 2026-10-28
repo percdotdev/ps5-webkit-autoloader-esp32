@@ -2,6 +2,7 @@ import { FILES, CHIP_OF, LAST, CONNECT, WRITE, state, session, serialOk } from "
 import { t, pickLang } from "./i18n.js";
 import { setBar, clearLog, logLine, copyLog, fmtBytesLabel } from "./log.js";
 import { dropSession, openSession, loadFirmware, writeImage } from "./flash.js";
+import { getReleaseInfo, compare, normalize } from "./releases.js";
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -217,6 +218,63 @@ function meterBox(statusText) {
   return meter;
 }
 
+function releaseBox() {
+  const box = document.createElement("div");
+  box.className = "release";
+  box.id = "release";
+  box.textContent = t("releaseChecking");
+  fillRelease(box);
+  return box;
+}
+
+async function fillRelease(box) {
+  let info = null;
+  try { info = await getReleaseInfo(); } catch { info = null; }
+  if (!box.isConnected) return;
+  if (!info || (!info.bundled && !info.upstream)) {
+    box.hidden = true;
+    return;
+  }
+
+  const bundled = info.bundled && info.bundled.payload ? normalize(info.bundled.payload) : "";
+  const upstream = info.upstream ? normalize(info.upstream.tag) : "";
+  const notes = (info.ours && info.ours.url) || (info.upstream && info.upstream.url) || "";
+
+  const line = document.createElement("div");
+  line.className = "release-line";
+  const baked = document.createElement("span");
+  if (bundled) {
+    baked.append(document.createTextNode(`${t("releaseBundled")} `));
+    const version = document.createElement("b");
+    version.textContent = bundled;
+    baked.append(version);
+  } else {
+    baked.textContent = t("releaseChecking");
+  }
+  line.append(baked);
+
+  if (bundled && upstream) {
+    const stateText = document.createElement("span");
+    if (compare(upstream, bundled) > 0) {
+      stateText.textContent = t("releaseNew").replace("{v}", upstream);
+    } else {
+      stateText.textContent = t("releaseCurrent");
+    }
+    line.append(stateText);
+  }
+
+  box.replaceChildren(line);
+
+  if (notes) {
+    const link = document.createElement("a");
+    link.href = notes;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = t("releaseNotes");
+    box.append(link);
+  }
+}
+
 function renderStage() {
   const h = document.createElement("h1");
   h.textContent = t(`t${state.step}`);
@@ -229,7 +287,7 @@ function renderStage() {
     const s = document.createElement("p");
     s.className = "status " + (serialOk ? "ok" : "bad");
     s.textContent = serialOk ? t("ok0") : t("no0");
-    frag.append(lead, s, navRow());
+    frag.append(lead, s, releaseBox(), navRow());
   }
 
   if (state.step === 1) {
@@ -319,6 +377,8 @@ function render() {
   document.querySelector("[data-i18n=skip]").textContent = t("skip");
   document.querySelector("[data-i18n=source]").textContent = t("source");
   document.querySelector("[data-i18n=bins]").textContent = t("bins");
+  const trouble = document.querySelector("[data-i18n=trouble]");
+  if (trouble) trouble.textContent = t("trouble");
   document.getElementById("stepnav").setAttribute("aria-label", t("stepsNav"));
   document.querySelectorAll("[data-set-lang]").forEach((b) => {
     b.setAttribute("aria-pressed", b.dataset.setLang === state.lang ? "true" : "false");
@@ -385,8 +445,9 @@ async function writeFirmware() {
     const data = await loadFirmware(path, setBar);
     logLine(fmtBytesLabel(data.byteLength));
     setStatus(t("writing"));
-    await writeImage(data, setBar);
+    const result = await writeImage(data, setBar);
     setBar(100);
+    if (result && result.md5) logLine(`${t("verified")}  ${result.md5}`, "hi");
     state.flashed = true;
     sessionStorage.setItem("flashed", "1");
     setStatus(t("done"), "ok");
@@ -407,9 +468,128 @@ async function writeFirmware() {
   }
 }
 
+let recovery = null;
+
+function recoveryAction(kind) {
+  if (recovery) recovery.close();
+
+  if (kind === "connect") {
+    state.step = CONNECT;
+    writeUrl();
+    render();
+    connect(true);
+    return;
+  }
+
+  if (kind === "reflash") {
+    state.step = WRITE;
+    writeUrl();
+    render();
+    document.getElementById("flash-btn")?.focus();
+    return;
+  }
+
+  if (kind === "status" || kind === "selftest") {
+    const page = kind === "status" ? "status.html" : "selftest.html";
+    window.open(`http://192.168.4.1/${page}`, "_blank", "noopener");
+    return;
+  }
+
+  if (kind === "copy") {
+    copyLog();
+    return;
+  }
+
+  if (kind === "restart") {
+    sessionStorage.removeItem("flashed");
+    state.flashed = false;
+    dropSession();
+    state.step = 0;
+    writeUrl();
+    render();
+    stage.focus({ preventScroll: true });
+  }
+}
+
+function buildRecovery() {
+  const dialog = document.createElement("dialog");
+  dialog.className = "recovery";
+  dialog.setAttribute("aria-labelledby", "recovery-title");
+
+  const title = document.createElement("h2");
+  title.id = "recovery-title";
+  title.textContent = t("recTitle");
+
+  const lead = document.createElement("p");
+  lead.textContent = t("recLead");
+
+  const list = document.createElement("div");
+  for (const section of t("recSections")) {
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = section.title;
+
+    const body = document.createElement("div");
+    body.className = "recovery-body";
+    const text = document.createElement("p");
+    text.textContent = section.body;
+    body.append(text);
+
+    if (section.steps && section.steps.length) {
+      const ol = document.createElement("ol");
+      ol.className = "list";
+      section.steps.forEach((step, i) => {
+        const li = document.createElement("li");
+        const n = document.createElement("span");
+        n.textContent = String(i + 1);
+        const p = document.createElement("p");
+        p.textContent = step;
+        li.append(n, p);
+        ol.append(li);
+      });
+      body.append(ol);
+    }
+
+    if (section.action) {
+      const row = document.createElement("div");
+      row.className = "row";
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "act ghost";
+      button.textContent = section.label;
+      button.addEventListener("click", () => recoveryAction(section.action));
+      row.append(button);
+      body.append(row);
+    }
+
+    details.append(summary, body);
+    list.append(details);
+  }
+
+  const foot = document.createElement("div");
+  foot.className = "row";
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "act";
+  close.textContent = t("recClose");
+  close.addEventListener("click", () => dialog.close());
+  foot.append(close);
+
+  dialog.append(title, lead, list, foot);
+  return dialog;
+}
+
+function openRecovery() {
+  if (recovery) recovery.remove();
+  recovery = buildRecovery();
+  document.body.append(recovery);
+  recovery.showModal();
+}
+
 document.querySelectorAll("[data-set-lang]").forEach((b) => {
   b.addEventListener("click", () => setLang(b.dataset.setLang));
 });
+document.getElementById("recovery-btn")?.addEventListener("click", openRecovery);
 window.addEventListener("popstate", () => { readUrl(); render(); });
 
 readUrl();

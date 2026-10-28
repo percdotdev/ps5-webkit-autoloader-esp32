@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<title>Board status</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #171717; color: #f2f2f2; }
+  body {
+    font: 14px/1.6 ui-monospace, "Cascadia Mono", Consolas, monospace;
+    padding: 24px 20px 48px; max-width: 46rem; margin: 0 auto;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { color: #8d8d8d; margin: 0 0 16px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 0; }
+  th, td { text-align: left; vertical-align: top; padding: 7px 0; border-bottom: 1px solid #2c2c2c; }
+  th { width: 38%; color: #8d8d8d; font-weight: 400; }
+  td { color: #f2f2f2; overflow-wrap: anywhere; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  button, a.act {
+    appearance: none; display: inline-flex; align-items: center; min-height: 38px;
+    padding: 0 14px; border: 1px solid #f2f2f2; background: #f2f2f2; color: #171717;
+    font: inherit; text-decoration: none; cursor: pointer;
+  }
+  button.ghost, a.ghost { background: transparent; color: #f2f2f2; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  .bad { color: #f2f2f2; }
+  #error { color: #f2f2f2; border: 1px solid #f2f2f2; padding: 12px; margin-top: 16px; }
+  #error:empty { display: none; }
+</style>
+</head>
+<body>
+<h1>Board status</h1>
+<p>This page is served by the ESP32 itself. Refresh it after a request to see the last page the console asked for.</p>
+<div id="error" role="alert"></div>
+<table>
+  <tbody id="rows"><tr><td colspan="2">Loading…</td></tr></tbody>
+</table>
+<div class="row">
+  <button type="button" id="refresh" class="ghost">Refresh</button>
+  <button type="button" id="copy" class="ghost">Copy JSON</button>
+  <a class="act ghost" href="/selftest.html">Self-test</a>
+  <a class="act ghost" href="/">Home</a>
+</div>
+<script>
+(function () {
+  'use strict';
+  var rows = document.getElementById('rows');
+  var errorBox = document.getElementById('error');
+  var copy = document.getElementById('copy');
+  var refresh = document.getElementById('refresh');
+  var raw = '';
+
+  function bytes(n) {
+    n = Number(n) || 0;
+    if (n >= 1048576) return (n / 1048576).toFixed(2) + ' MB';
+    if (n >= 1024) return (n / 1024).toFixed(1) + ' KB';
+    return n + ' B';
+  }
+
+  function uptime(seconds) {
+    seconds = Number(seconds) || 0;
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    var s = seconds % 60;
+    return h ? h + 'h ' + m + 'm' : m ? m + 'm ' + s + 's' : s + 's';
+  }
+
+  function add(label, value) {
+    var tr = document.createElement('tr');
+    var th = document.createElement('th');
+    var td = document.createElement('td');
+    th.textContent = label;
+    td.textContent = value === undefined || value === null || value === '' ? '—' : String(value);
+    tr.appendChild(th);
+    tr.appendChild(td);
+    rows.appendChild(tr);
+  }
+
+  function show(data) {
+    rows.textContent = '';
+    var payload = data.payload || {};
+    var total = Number(data.fs_total) || 0;
+    var used = Number(data.fs_used) || 0;
+    add('Payload', payload.payload ? payload.payload + ' (built ' + (payload.built || '?') + ')' : 'unknown');
+    add('Firmware build', data.built);
+    add('Board', data.board);
+    add('Chip', data.chip);
+    add('Network', data.ssid + ' · http://' + data.ip + '/');
+    add('Uptime', uptime(data.uptime));
+    add('Free heap', bytes(data.free_heap));
+    add('LittleFS', bytes(used) + ' of ' + bytes(total) + (total ? ' (' + Math.round(used / total * 100) + '%)' : ''));
+    add('Last chain', data.last_chain);
+    add('Last request', data.last_path);
+    add('Last error', data.last_error ? data.last_error + ' (HTTP ' + data.last_status + ')' : 'none');
+    add('Manifest version', data.manifest);
+  }
+
+  function load() {
+    refresh.disabled = true;
+    errorBox.textContent = '';
+    fetch('/status.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      })
+      .then(function (text) {
+        raw = text;
+        show(JSON.parse(text));
+      })
+      .catch(function (err) {
+        rows.textContent = '';
+        errorBox.textContent = 'Could not read /status.json: ' + err.message;
+      })
+      .then(function () {
+        refresh.disabled = false;
+      });
+  }
+
+  refresh.addEventListener('click', load);
+  copy.addEventListener('click', function () {
+    if (!raw) return;
+    var done = function () {
+      copy.textContent = 'Copied';
+      setTimeout(function () { copy.textContent = 'Copy JSON'; }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(raw).then(done, function () {});
+    }
+  });
+  load();
+})();
+</script>
+</body>
+</html>

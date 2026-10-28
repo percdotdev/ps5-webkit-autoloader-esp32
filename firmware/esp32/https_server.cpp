@@ -4,6 +4,7 @@
 #include "server_certs.h"
 #include "https_server.h"
 #include "host_files.h"
+#include "status.h"
 #include "config.h"
 #include "led.h"
 
@@ -145,6 +146,11 @@ static esp_err_t httpsFileHandler(httpd_req_t *req)
     String path = portalNormalizePath(req->uri);
     portalRewriteMirrorPath(path, "HTTPS");
 
+    if (path == "/status" || path == "/selftest")
+        path += ".html";
+
+    portalStatusTrackPath(path);
+
     File file;
     if (path.endsWith("/"))
     {
@@ -187,6 +193,8 @@ static esp_err_t httpsFileHandler(httpd_req_t *req)
             file.close();
 
         Serial.printf("[HTTPS] 404: %s", path.c_str());
+
+        portalStatusTrackError(path, 404);
 
         if (path.startsWith("/document/") && path.indexOf("/ps5") >= 0)
         {
@@ -296,6 +304,16 @@ static esp_err_t httpsNetworkTestHandler(httpd_req_t *req)
     return httpd_resp_send(req, "OK", HTTPD_RESP_USE_STRLEN);
 }
 
+static esp_err_t httpsStatusHandler(httpd_req_t *req)
+{
+    portalLedActivity();
+    portalLogHeap("HTTPS status");
+    setHttpsNoCacheHeaders(req);
+    httpd_resp_set_type(req, "application/json");
+    String json = portalStatusJson();
+    return httpd_resp_send(req, json.c_str(), json.length());
+}
+
 bool portalStartHttps()
 {
     httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
@@ -311,7 +329,7 @@ bool portalStartHttps()
     config.prvtkey_pem = server_key;
     config.prvtkey_len = server_key_len;
     config.httpd.uri_match_fn = httpd_uri_match_wildcard;
-    config.httpd.max_uri_handlers = 12;
+    config.httpd.max_uri_handlers = 14;
 
     Serial.printf("cert len: %u, last: %02X\n",
                   (unsigned)server_crt_len, server_crt[server_crt_len - 1]);
@@ -373,11 +391,15 @@ bool portalStartHttps()
         .uri = "/*", .method = HTTP_GET,
         .handler = httpsFileHandler, .user_ctx = NULL
     };
+    httpd_uri_t status_uri = {
+        .uri = "/status.json", .method = HTTP_GET,
+        .handler = httpsStatusHandler, .user_ctx = NULL
+    };
 
     const httpd_uri_t *handlers[] = {
         &netstart_uri, &generate_uri, &gen_uri, &hotspot_uri,
         &connecttest_uri, &redirect_uri, &ncsi_uri, &post_uri,
-        &networktest_get_uri, &file_uri
+        &networktest_get_uri, &status_uri, &file_uri
     };
 
     for (size_t i = 0; i < sizeof(handlers) / sizeof(handlers[0]); i++)

@@ -16,3 +16,5 @@ __pycache__/
 /*.mini/
 /henloader/
 replace_autoloader_elf.py
+/flasher/payload.json
+/flasher/firmware/

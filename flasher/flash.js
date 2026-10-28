@@ -2,6 +2,7 @@ import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.7.0/bundle.
 import { FILES, CHIP_OF, state, session } from "./state.js";
 import { t } from "./i18n.js";
 import { logLine } from "./log.js";
+import { md5Hex } from "./md5.js";
 
 function ignoreMissingSignals(transport) {
   const wrap = (fn) => async function (...args) {
@@ -100,8 +101,31 @@ export async function writeImage(data, onProg) {
     eraseAll: false,
     compress: false,
     reportProgress(_i, written, total) {
-      onProg(40 + (written / total) * 60);
+      onProg(40 + (written / total) * 48);
     },
   });
+
+  // Verify what the chip actually holds. flashMd5sum runs the ROM/stub MD5
+  // command over the written range, so the whole 4 MB image is checked without
+  // reading it back over USB.
+  let actual = null;
+  let mismatch = false;
+  try {
+    onProg(89);
+    const expected = await md5Hex(data, (p) => onProg(89 + p * 4));
+    onProg(94);
+    actual = await session.loader.flashMd5sum(0, data.byteLength);
+    onProg(98);
+    if (String(actual).toLowerCase() !== expected) {
+      mismatch = true;
+      throw new Error(t("verifyMismatch"));
+    }
+  } catch (err) {
+    if (mismatch) throw err;
+    logLine(t("verifyUnavailable"), "bad");
+    actual = null;
+  }
+
   try { await session.loader.after("no_reset"); } catch { /* S2 CDC cannot leave download mode over USB */ }
+  return { md5: actual };
 }

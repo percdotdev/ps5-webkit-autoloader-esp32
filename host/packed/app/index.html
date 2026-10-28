@@ -24,7 +24,7 @@
     if (marker.trim() !== version) throw new Error('Cache incomplete');
     location.replace(base + chain + '.html');
   }).catch(function () {
-    document.getElementById('status').textContent = 'Cache incomplete. Run the installer again.';
+    document.getElementById('status').innerHTML = 'Cache incomplete. <a href="/selftest.html">Run the self-test</a> or run the installer again.';
   });
 })();
 </script>

@@ -44,6 +44,17 @@ jobs:
             --dir flasher/firmware
           ls -lh flasher/firmware
 
+      - name: Fetch payload metadata
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release download latest \
+            --repo "${{ github.repository }}" \
+            --pattern 'payload.json' \
+            --dir flasher || cp host/packed/version.json flasher/payload.json
+          cat flasher/payload.json
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

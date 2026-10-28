@@ -9,6 +9,7 @@ externalizes kexp/elfldr/autoloader.elf so both exploits fit in 4 MB flash.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -136,6 +137,29 @@ def main() -> int:
         shutil.copy2(src, version_dir / f"{name}.html")
     (version_dir / "__complete__").write_text(app_dir + "\n", encoding="utf-8")
 
+    # One machine-readable source of truth for the firmware (/status.json) and
+    # the flasher release check (flasher/payload.json on Pages).
+    (out / "version.json").write_text(
+        json.dumps(
+            {
+                "payload": base,
+                "build": version,
+                "app": app_dir,
+                "built": build_time,
+                "source": "https://github.com/itsPLK/ps5-webkit-autoloader",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    # Diagnostic pages live in the repository, not in the upstream payload.
+    for page in ("status.html", "selftest.html"):
+        source = ROOT / "host" / page
+        if source.is_file():
+            shutil.copy2(source, out / page)
+
     logo = web / "frontend" / "installer-page" / "logo.svg"
     if not logo.is_file():
         logo = web / "assets" / "icon.svg"
@@ -162,6 +186,11 @@ def main() -> int:
         "  if (chain !== 'poops' && chain !== 'relapse') {\n"
         "    try { chain = window.localStorage.getItem('wkal_exploit'); } catch (error) { chain = null; }\n"
         "  }\n",
+    )
+    pointer_text = pointer_text.replace(
+        "document.getElementById('status').textContent = 'Cache incomplete. Run the installer again.';",
+        "document.getElementById('status').innerHTML = 'Cache incomplete. "
+        "<a href=\"/selftest.html\">Run the self-test</a> or run the installer again.';",
     )
     (out / "app" / "index.html").write_text(pointer_text, encoding="utf-8")
 

@@ -2,6 +2,7 @@
 #include <LittleFS.h>
 #include "http_server.h"
 #include "host_files.h"
+#include "status.h"
 #include "led.h"
 #include "config.h"
 
@@ -45,6 +46,14 @@ static void httpNetworkTestHandler()
     webServer.send(200, "text/plain", "OK");
 }
 
+static void httpStatusHandler()
+{
+    portalLedActivity();
+    logHttpRequest();
+    setHttpNoCacheHeaders();
+    webServer.send(200, "application/json", portalStatusJson());
+}
+
 static void httpFileHandler()
 {
     portalLogHeap("HTTP file begin");
@@ -59,6 +68,11 @@ static void httpFileHandler()
     }
 
     portalRewriteMirrorPath(path, "HTTP");
+
+    if (path == "/status" || path == "/selftest")
+        path += ".html";
+
+    portalStatusTrackPath(path);
 
     if (path.endsWith("/"))
     {
@@ -88,6 +102,7 @@ static void httpFileHandler()
         if (file)
             file.close();
 
+        portalStatusTrackError(path, 404);
         Serial.printf("[HTTP] 404: %s", path.c_str());
 
         if (path.startsWith("/document/") && (path.indexOf("/ps5") >= 0 || path.indexOf("/ps4") >= 0))
@@ -167,6 +182,8 @@ void portalStartHttp()
         setHttpNoCacheHeaders();
         webServer.send(200, "text/plain", "Success");
     });
+
+    webServer.on("/status.json", HTTP_GET, httpStatusHandler);
 
     webServer.onNotFound(httpFileHandler);
     webServer.begin();

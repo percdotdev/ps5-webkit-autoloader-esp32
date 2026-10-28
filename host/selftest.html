@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<title>Self-test</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #171717; color: #f2f2f2; }
+  body {
+    font: 14px/1.55 ui-monospace, "Cascadia Mono", Consolas, monospace;
+    padding: 24px 20px 48px; max-width: 46rem; margin: 0 auto;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p { color: #8d8d8d; margin: 0 0 16px; }
+  #summary { border: 1px solid #2c2c2c; padding: 12px 14px; margin: 16px 0; color: #8d8d8d; }
+  #summary b { color: #f2f2f2; font-weight: 600; }
+  #summary.pass { border-color: #f2f2f2; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: grid; grid-template-columns: 3.2rem 1fr; gap: 10px; padding: 7px 0; border-bottom: 1px solid #2c2c2c; }
+  li i { font-style: normal; color: #8d8d8d; }
+  li.ok i, li.fail i { color: #f2f2f2; }
+  li span { overflow-wrap: anywhere; color: #8d8d8d; }
+  li b { color: #f2f2f2; font-weight: 400; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  button, a.act {
+    appearance: none; display: inline-flex; align-items: center; min-height: 38px;
+    padding: 0 14px; border: 1px solid #f2f2f2; background: #f2f2f2; color: #171717;
+    font: inherit; text-decoration: none; cursor: pointer;
+  }
+  button.ghost, a.ghost { background: transparent; color: #f2f2f2; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<h1>Self-test</h1>
+<p>Opens on the console or on any device joined to <b>ESP32_PORTAL</b>. It asks the board for every file the autoloader needs and reports what is missing.</p>
+<div id="summary">Running checks…</div>
+<ul id="results"></ul>
+<div class="row">
+  <button type="button" id="again" class="ghost" disabled>Run again</button>
+  <button type="button" id="copy" class="ghost" disabled>Copy report</button>
+  <a class="act ghost" href="/status.html">Board status</a>
+  <a class="act ghost" href="/">Install</a>
+</div>
+<script>
+(function () {
+  'use strict';
+  var list = document.getElementById('results');
+  var summary = document.getElementById('summary');
+  var again = document.getElementById('again');
+  var copy = document.getElementById('copy');
+  var report = [];
+  var running = false;
+  var app = null;
+  var status = null;
+
+  function noCache(url) {
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+  }
+
+  function fetchText(url) {
+    return fetch(noCache(url), { cache: 'no-store' }).then(function (res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.text();
+    });
+  }
+
+  // Read the first chunk and cancel. Enough to prove the route, the gzip
+  // header and the file all work without pulling a 3 MB ELF over Wi-Fi.
+  function probe(url) {
+    return fetch(noCache(url), { cache: 'no-store' }).then(function (res) {
+      if (!res.ok || res.status === 204) throw new Error('HTTP ' + res.status);
+      if (!res.body || !res.body.getReader) return 'served';
+      var reader = res.body.getReader();
+      return reader.read().then(function (chunk) {
+        try { reader.cancel(); } catch (error) { }
+        if (chunk.done && !(chunk.value && chunk.value.length)) throw new Error('empty body');
+        return 'served';
+      });
+    });
+  }
+
+  function add(label, state, detail) {
+    var li = document.createElement('li');
+    var mark = document.createElement('i');
+    var text = document.createElement('span');
+    var head = document.createElement('b');
+    head.textContent = label;
+    text.appendChild(head);
+    if (detail) text.appendChild(document.createTextNode(' — ' + detail));
+    mark.textContent = state === 'skip' ? 'skip' : state ? 'ok' : 'fail';
+    li.className = state === 'skip' ? '' : state ? 'ok' : 'fail';
+    li.appendChild(mark);
+    li.appendChild(text);
+    list.appendChild(li);
+    report.push(label + ': ' + (state === 'skip' ? 'SKIP ' : state ? 'OK   ' : 'FAIL ') + (detail || ''));
+  }
+
+  function message(err) {
+    return err && err.message ? err.message : String(err);
+  }
+
+  function loadMeta() {
+    return fetchText('/status.json').then(function (text) {
+      status = JSON.parse(text);
+      if (status.payload && status.payload.app) app = status.payload.app;
+      add('Status endpoint', true, (status.board || 'board') +
+        (status.payload && status.payload.payload ? ' · payload ' + status.payload.payload : ''));
+    }, function (err) {
+      add('Status endpoint', false, message(err));
+    }).then(function () {
+      return fetchText('/app/index.html').then(function (text) {
+        var match = /var version = '([^']+)'/.exec(text);
+        if (match && !app) app = match[1];
+        add('/app/index.html', true, app || 'served');
+      }, function (err) {
+        add('/app/index.html', false, message(err));
+      });
+    });
+  }
+
+  function checks(appDir) {
+    return [
+      ['/app/' + appDir + '/__complete__', function () {
+        return fetchText('/app/' + appDir + '/__complete__').then(function (text) {
+          if (text.trim() !== appDir) throw new Error('marker says ' + JSON.stringify(text.trim()));
+          return text.trim();
+        });
+      }],
+      ['/app/' + appDir + '/poops.html', function () { return probe('/app/' + appDir + '/poops.html'); }],
+      ['/app/' + appDir + '/relapse.html', function () { return probe('/app/' + appDir + '/relapse.html'); }],
+      ['/app/' + appDir + '/payloads/autoloader.elf', function () { return probe('/app/' + appDir + '/payloads/autoloader.elf'); }],
+      ['/app/' + appDir + '/shared/elfldr-ps5.elf', function () { return probe('/app/' + appDir + '/shared/elfldr-ps5.elf'); }],
+      ['/app/' + appDir + '/shared/kexp-ps5.bin', function () { return probe('/app/' + appDir + '/shared/kexp-ps5.bin'); }],
+      ['/slopkit.appcache', function () {
+        return fetchText('/slopkit.appcache').then(function (text) {
+          if (text.indexOf('/app/' + appDir + '/poops.html') < 0) throw new Error('does not list the poops page');
+          if (text.indexOf('/app/' + appDir + '/payloads/autoloader.elf') < 0) throw new Error('does not list autoloader.elf');
+          return 'poops cache manifest';
+        });
+      }],
+      ['/relapse.appcache', function () {
+        return fetchText('/relapse.appcache').then(function (text) {
+          if (text.indexOf('/app/' + appDir + '/relapse.html') < 0) throw new Error('does not list the relapse page');
+          if (text.indexOf('/app/' + appDir + '/shared/kexp-ps5.bin') < 0) throw new Error('does not list kexp-ps5.bin');
+          return 'relapse cache manifest';
+        });
+      }],
+      ['/logo.svg', function () { return probe('/logo.svg'); }]
+    ];
+  }
+
+  function finish() {
+    var failed = list.querySelectorAll('li.fail').length;
+    var ran = list.querySelectorAll('li').length;
+    summary.className = failed ? '' : 'pass';
+    summary.innerHTML = failed
+      ? '<b>' + failed + ' of ' + ran + ' checks failed.</b> Reinstall from the User’s Guide, then run this again.'
+      : '<b>Everything the autoloader needs is on the board.</b>' + (app ? ' Payload ' + app + ' is complete.' : '');
+    if (status && status.payload && status.payload.payload && app) {
+      summary.appendChild(document.createTextNode(' Reported payload ' + status.payload.payload + '.'));
+    }
+    running = false;
+    again.disabled = false;
+    copy.disabled = report.length === 0;
+  }
+
+  function start() {
+    if (running) return;
+    running = true;
+    again.disabled = true;
+    copy.disabled = true;
+    list.textContent = '';
+    report = [];
+    app = null;
+    status = null;
+    summary.className = '';
+    summary.textContent = 'Running checks…';
+    loadMeta().then(function () {
+      if (!app) {
+        add('Payload directory', 'skip', 'could not resolve the installed payload; reinstall from the User’s Guide');
+        return;
+      }
+      var steps = checks(app);
+      return steps.reduce(function (previous, step) {
+        return previous.then(function () {
+          return step[1]().then(function (detail) {
+            add(step[0], true, detail);
+          }, function (err) {
+            add(step[0], false, message(err));
+          });
+        });
+      }, Promise.resolve());
+    }).then(finish, function (err) {
+      add('Self-test', false, message(err));
+      finish();
+    });
+  }
+
+  again.addEventListener('click', start);
+  copy.addEventListener('click', function () {
+    var text = report.join('\n');
+    if (status) text += '\n\nstatus.json\n' + JSON.stringify(status, null, 2);
+    var done = function () {
+      copy.textContent = 'Copied';
+      setTimeout(function () { copy.textContent = 'Copy report'; }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { });
+    }
+  });
+  start();
+})();
+</script>
+</body>
+</html>
