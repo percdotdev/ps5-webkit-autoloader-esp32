@@ -51,8 +51,8 @@ export const I = {
     p6: "Keep the PS5 on ESP32_PORTAL and leave the board plugged in. The User’s Guide will load from the board, not from Sony.",
     s6: [
       "Settings → Guide and Tips → User’s Guide.",
-      "Wait until the page finishes loading. The first time it caches the files.",
-      "Payload Manager should open. After that, use Media → WebKit Autoloader on later boots.",
+      "Wait until the page finishes. The first time it caches the files and adds the homescreen shortcut.",
+      "Reboot the PS5. Open Media → WebKit Autoloader. Payload Manager starts when you have no autoload.txt.",
     ],
     n6b: "poops works on 7.00–12.00. Relapse works on 7.00–13.60 except 9.05. Stay on ESP32_PORTAL.",
     idle: "",
@@ -125,8 +125,8 @@ export const I = {
     p6: "Mantén la PS5 en ESP32_PORTAL y no desconectes la placa. La Guía del usuario carga desde la placa, no desde Sony.",
     s6: [
       "Ajustes → Guía y consejos → Guía del usuario.",
-      "Espera a que la página termine de cargar. La primera vez guarda los archivos en caché.",
-      "Debería abrirse Payload Manager. Luego, en siguientes arranques: Media → WebKit Autoloader.",
+      "Espera a que la página termine. La primera vez guarda los archivos y crea el acceso directo.",
+      "Reinicia la PS5. Abre Media → WebKit Autoloader. Payload Manager se abre si no hay autoload.txt.",
     ],
     n6b: "poops: 7.00–12.00. Relapse: 7.00–13.60 excepto 9.05. Sigue en ESP32_PORTAL.",
     idle: "",
