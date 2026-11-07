@@ -105,6 +105,7 @@ else
         -name '*.svg' -o \
         -name '*.css' -o \
         -name 'version' -o \
-        -name '*.json' \
+        -name '*.json' -o \
+        -name '*.lua' \
     \) -print0)
 fi

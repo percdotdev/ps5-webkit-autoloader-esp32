@@ -9,7 +9,7 @@ Use it on a console you own. Homebrew and WebKit exploits can violate Sony’s t
 | poops | 7.00–12.00 |
 | relapse | 7.00–13.60 except 9.05 |
 
-If both work on your version, poops is the one that runs.
+The page picks the exploit. On this board’s Wi-Fi it uses Relapse, except on 9.05, which can only run Poops. Poops is the fallback when the console has no network interface and the firmware is 12.00 or older.
 
 ## What you need
 
@@ -47,8 +47,8 @@ The LED stays on while the board boots, then does a short blink every couple of 
 1. Unplug the board from the PC and plug it into a USB port on the PS5. Leave it there.
 2. On the PS5: **Settings → Network → Settings → Set Up Internet Connection**. Join Wi-Fi **`ESP32_PORTAL`**, password **`12345678`**.
 3. Stay on that network. The PS5 will say there is no internet. That is expected. There is no internet, and none is required.
-4. **Settings → Guide and Tips → User’s Guide**. Wait until the page finishes loading. The first time this caches the files onto the console.
-5. Payload Manager should open. A **WebKit Autoloader** shortcut appears under **Media**.
+4. **Settings → Guide and Tips → User’s Guide**. Wait until caching finishes. The page runs the exploit and installs the homescreen shortcut.
+5. Reboot the PS5. Open **Media → WebKit Autoloader**. Payload Manager starts when you have no `autoload.txt`.
 
 Next time you only need the board plugged in, Wi-Fi still on `ESP32_PORTAL`, then **Media → WebKit Autoloader**.
 

@@ -22,6 +22,7 @@ String portalMimeType(const String &path)
     if (path.endsWith(".html") || path.endsWith(".htm")) return "text/html; charset=utf-8";
     if (path.endsWith(".css")) return "text/css";
     if (path.endsWith(".js") || path.endsWith(".mjs")) return "application/javascript";
+    if (path.endsWith(".lua")) return "text/plain; charset=utf-8";
     if (path.endsWith(".json")) return "application/json";
     if (path.endsWith(".png")) return "image/png";
     if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
