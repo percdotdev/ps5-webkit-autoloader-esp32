@@ -43,7 +43,13 @@ minimize_file() {
     case "$file" in
         *.js)
             # Terser only reformats here; compression and name mangling are opt-in.
-            terser "$file" --output "$tmp_file"
+            # Payload snippets use a top-level return, and the loader modules use
+            # import/export. Neither parses as a classic script, so leave those as-is.
+            if ! terser "$file" --output "$tmp_file" >/dev/null 2>&1; then
+                rm -f "$tmp_file"
+                echo "Leaving unchanged (not a classic script): $file"
+                return
+            fi
             ;;
         *.css)
             cleancss -O0 --output "$tmp_file" "$file"
