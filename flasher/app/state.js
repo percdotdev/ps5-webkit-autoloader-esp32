@@ -4,6 +4,8 @@ export const state = {
   lang: "en",
   board: "s2",
   phase: "idle",
+  step: 0,     // open step: 0 board, 1 plug in, 2 install, 3 PS5
+  reached: 0,  // furthest step unlocked
   busy: false,
   eraseAll: false,
   localFile: null, // { name, data }

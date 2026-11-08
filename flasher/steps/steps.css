@@ -1,0 +1,53 @@
+/* The guided steps: one open at a time, finished ones fold up with a check. */
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; min-width: 0; }
+.step { padding: 0; overflow: hidden; transition: border-color 0.2s; }
+.step[data-state="open"] { border-color: var(--line-2); }
+.step-head {
+  width: 100%; display: flex; align-items: center; gap: 14px; padding: 16px 20px;
+  border: 0; background: none; text-align: left; cursor: pointer; color: var(--fg);
+}
+.step-head:disabled { cursor: default; }
+.step[data-state="locked"] .step-head { color: var(--faint); }
+.step-n {
+  display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%;
+  border: 1px solid var(--line-2); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.step[data-state="open"] .step-n { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.step[data-state="done"] .step-n { background: color-mix(in srgb, var(--ok) 16%, transparent); border-color: transparent; color: var(--ok); }
+.step-t { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.step-sum { margin-left: auto; color: var(--dim); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.step[data-state="done"] .step-head:hover .step-sum { color: var(--fg); }
+
+.step-body { display: none; padding: 0 20px 20px 62px; }
+.step[data-state="open"] .step-body { display: grid; gap: 16px; animation: open 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.step-lead { margin: 0; color: var(--dim); text-wrap: pretty; }
+.step-nav { display: flex; gap: 8px; }
+
+.prep { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; counter-reset: p; }
+.prep li {
+  counter-increment: p; display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: start;
+  padding: 12px 14px; border-radius: var(--radius-sm); background: var(--panel-2); border: 1px solid var(--line);
+}
+.prep li::before {
+  content: counter(p); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px;
+  background: var(--panel); border: 1px solid var(--line-2); font-size: 12px; font-weight: 600;
+}
+.prep li span { padding-top: 2px; }
+
+.more { border-top: 1px solid var(--line); padding-top: 12px; }
+.more > summary { cursor: pointer; color: var(--dim); font-size: 13px; list-style: none; display: flex; align-items: center; gap: 8px; }
+.more > summary::-webkit-details-marker { display: none; }
+.more > summary::before { content: "+"; font: 500 13px var(--mono); width: 1ch; }
+.more[open] > summary::before { content: "−"; }
+.more > summary:hover { color: var(--fg); }
+.more[open] { display: grid; gap: 12px; }
+.more > summary .btn { margin-left: auto; }
+.more:not([open]) > summary .btn { display: none; }
+.more .check { margin: 0; }
+
+@keyframes open { from { opacity: 0; transform: translateY(-4px); } }
+@media (max-width: 560px) {
+  .step-body { padding: 0 16px 16px; }
+  .step-head { padding: 14px 16px; }
+}

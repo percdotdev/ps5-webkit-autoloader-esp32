@@ -8,8 +8,8 @@ alwaysApply: true
 The tree is the product. Top-level names are domains, not languages.
 
 - `flasher/` — Chrome/Edge writer, served by GitHub Pages. Only `index.html` sits at its root; everything else lives in one folder per feature:
-  - `app/` — entry (`main.js`), page state, URL, theme, top bar. `page.css` is the one stylesheet: it carries the Hallmark stamp and imports `tokens.css`, `base.css`, `layout.css` and each feature's CSS.
-  - `device/` — serial session (esptool-js) and the device panel.
+  - `app/` — entry (`main.js`), page state, URL, theme, top bar, page-wide CSS.
+  - `device/` — serial session (esptool-js), the stage that acts out each step, the download-mode instructions.
   - `firmware/` — board catalog, latest release, picker, local `.bin` drop.
   - `install/` — install flow, flash write, progress meter, wake lock.
   - `log/` — log console and esptool line formatting.
@@ -17,7 +17,8 @@ The tree is the product. Top-level names are domains, not languages.
   - `language/` — `t()` plus one strings file per language.
   - `ui/` — shared DOM builder, icons, number formatting, button/toggle CSS.
   - `share/` — Open Graph card (`og.html` source, `og.png`).
-  - `photos/` — the four board photos (Apache-2.0, sources in `CREDITS.md`). Board names and photo paths live in `firmware/catalog.js`.
+  - `boards/` — the drawn boards (one file per board, shared parts, scene animations in `boards.css`).
+  - `steps/` — the four guided steps: which one is open, what is unlocked, the folded summaries.
   - `bin/` — merged images, fetched by the pages workflow. Not in git.
 - `host/installer/` — pages the PS5 browser loads from the board.
 - `host/packed/` — generated AppCache tree. Paths are the protocol. Do not rename or regroup them.

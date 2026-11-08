@@ -8,13 +8,14 @@ import { fmtBytes } from "../ui/format.js";
 import { showProgress, endProgress, hideProgress } from "./progress.js";
 import { holdAwake, releaseAwake } from "./wake-lock.js";
 import { writeImage } from "./write.js";
+import { advance } from "../steps/stepper.js";
 
-// ", 40 s left", once there is enough data to guess.
+// " · 40 s left", once there is enough data to guess.
 function timeLeft(started, f) {
   const spent = (Date.now() - started) / 1000;
   if (f < 0.05 || spent < 2) return "";
   const left = Math.max(1, Math.round((spent / f) * (1 - f)));
-  return `, ${t("left").replace("{s}", left)}`;
+  return ` · ${t("left").replace("{s}", left)}`;
 }
 
 function isAbort(err) {
@@ -27,11 +28,8 @@ function errorText(err) {
   return t("fail");
 }
 
-// Opens a <details>, or brings a section into view.
 function openFold(id) {
-  const box = document.getElementById(id);
-  if (box instanceof HTMLDetailsElement) box.open = true;
-  else box.scrollIntoView({ block: "start" });
+  document.getElementById(id).open = true;
 }
 
 // Connect, install, disconnect. `render` repaints the page after each phase change.
@@ -73,7 +71,7 @@ export function createFlow(render) {
       showProgress(t("phFetch"), null);
       data = await fetchImage(IMAGE_OF[session.imageKey]);
     }
-    logLine(`${name}, ${fmtBytes(data.byteLength)}`);
+    logLine(`${name} · ${fmtBytes(data.byteLength)}`);
 
     showProgress(state.eraseAll ? t("phErase") : `${t("phWrite")}…`, state.eraseAll ? null : 0);
     let started = 0;
@@ -106,8 +104,8 @@ export function createFlow(render) {
       logLine(t("phDone"), "hi");
       endProgress(t("phDone"), "ok");
       state.phase = "done";
+      advance();
       await dropSession();
-      openFold("guide-box");
     } finally {
       await releaseAwake();
     }

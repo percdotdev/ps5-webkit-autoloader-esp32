@@ -6,8 +6,15 @@ const TEXT = {
   "skip": "skip",
   "title": "title",
   "lead": "lead",
-  "fw-title": "fw",
-  "install-title": "installTitle",
+  "s0-title": "s0Title",
+  "s0-lead": "s0Lead",
+  "s0-next": "s0Next",
+  "s1-title": "s1Title",
+  "s1-lead": "s1Lead",
+  "s1-next": "s1Next",
+  "s2-title": "s2Title",
+  "more-title": "more",
+  "s3-again": "again",
   "erase-label": "erase",
   "erase-hint": "eraseHint",
   "or-file": "orFile",
@@ -17,7 +24,6 @@ const TEXT = {
   "foot-note": "footNote",
   "foot-src": "source",
   "foot-rel": "releases",
-  "foot-photos": "footPhotos",
 };
 
 export function renderPageText() {

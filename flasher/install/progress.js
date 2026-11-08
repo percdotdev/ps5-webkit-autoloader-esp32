@@ -16,7 +16,7 @@ export function showProgress(label, pct) {
   }
   const v = Math.max(0, Math.min(100, Math.round(pct)));
   meter.dataset.indeterminate = "false";
-  $("bar").style.transform = `scaleX(${v / 100})`;
+  $("bar").style.width = v + "%";
   $("pct").textContent = v + "%";
   document.title = `${v}% · ${BASE_TITLE}`;
 }
@@ -28,7 +28,7 @@ export function endProgress(label, tone) {
   meter.dataset.tone = tone;
   $("phase").textContent = label;
   if (tone === "ok") {
-    $("bar").style.transform = "scaleX(1)";
+    $("bar").style.width = "100%";
     $("pct").textContent = "100%";
   } else {
     $("pct").textContent = "";
@@ -38,6 +38,6 @@ export function endProgress(label, tone) {
 
 export function hideProgress() {
   $("meter").hidden = true;
-  $("bar").style.transform = "scaleX(0)";
+  $("bar").style.width = "0";
   document.title = BASE_TITLE;
 }

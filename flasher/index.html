@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#f4f1ec">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b0b0d">
   <title>PS5 WebKit Autoloader</title>
   <meta name="description" content="Write the PS5 WebKit Autoloader firmware to an ESP32, then join ESP32_PORTAL on the console and open the User’s Guide.">
   <link rel="canonical" href="https://percdotdev.github.io/ps5-webkit-autoloader-esp32/">
@@ -18,34 +18,46 @@
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="PS5 WebKit Autoloader for ESP32: flash, join ESP32_PORTAL, open User’s Guide.">
+  <meta property="og:image:alt" content="PS5 WebKit Autoloader for ESP32 — flash, join ESP32_PORTAL, open User’s Guide.">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PS5 WebKit Autoloader">
   <meta name="twitter:description" content="Write the PS5 WebKit Autoloader firmware to an ESP32, then join ESP32_PORTAL on the console and open the User’s Guide.">
   <meta name="twitter:image" content="https://percdotdev.github.io/ps5-webkit-autoloader-esp32/share/og.png">
-  <meta name="twitter:image:alt" content="PS5 WebKit Autoloader for ESP32: flash, join ESP32_PORTAL, open User’s Guide.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='2' width='20' height='20' fill='%23221e1b'/%3E%3Crect x='7' y='7' width='10' height='10' fill='%23b4542b'/%3E%3C/svg%3E">
+  <meta name="twitter:image:alt" content="PS5 WebKit Autoloader for ESP32 — flash, join ESP32_PORTAL, open User’s Guide.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='2' width='20' height='20' rx='6' fill='%23111114'/%3E%3Cpath d='M8 8.5h5.5a2.5 2.5 0 0 1 0 5H10V16' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Onest:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
   <script>
-    (() => {
-      let t = null;
-      try { t = localStorage.getItem("theme"); } catch {}
-      if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      document.documentElement.dataset.theme = t;
-    })();
+    try {
+      const t = localStorage.getItem("theme");
+      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+    } catch {}
   </script>
-  <link rel="stylesheet" href="./app/page.css">
+  <link rel="stylesheet" href="./app/base.css">
+  <link rel="stylesheet" href="./app/layout.css">
+  <link rel="stylesheet" href="./ui/controls.css">
+  <link rel="stylesheet" href="./device/device.css">
+  <link rel="stylesheet" href="./firmware/firmware.css">
+  <link rel="stylesheet" href="./install/install.css">
+  <link rel="stylesheet" href="./log/log.css">
+  <link rel="stylesheet" href="./guide/guide.css">
+  <link rel="stylesheet" href="./boards/boards.css">
+  <link rel="stylesheet" href="./steps/steps.css">
 </head>
 <body>
   <a class="skip" href="#main" id="skip">Skip to content</a>
 
-  <header class="bar">
-    <div class="bar-in">
-      <a class="wordmark" href="./">WebKit Autoloader</a>
-      <p class="status" id="pill" role="status" aria-live="polite"><span id="pill-text">Not connected</span></p>
-      <div class="bar-tools">
+  <header class="top">
+    <div class="top-in">
+      <a class="brand" href="./">
+        <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6"/><path d="M8 8.5h5.5a2.5 2.5 0 0 1 0 5H10V16"/></svg>
+        <span>WebKit Autoloader</span>
+      </a>
+      <div class="pill" id="pill" role="status" aria-live="polite">
+        <i class="dot"></i><span id="pill-text">Not connected</span>
+      </div>
+      <div class="top-tools">
         <div class="seg" role="group" aria-label="Language">
           <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
           <button type="button" data-set-lang="es" aria-pressed="false">ES</button>
@@ -56,65 +68,88 @@
     </div>
   </header>
 
-  <main id="main" class="page" tabindex="-1">
+  <main id="main" tabindex="-1">
     <div class="intro">
       <h1 id="title"></h1>
-      <p class="lead" id="lead"></p>
+      <p id="lead"></p>
     </div>
 
-    <ol class="steps">
-      <li class="step">
-        <div class="step-head"><span class="step-n" aria-hidden="true">1</span><h2 id="fw-title"></h2></div>
-        <div class="step-body">
-          <div id="boards" class="boards" role="radiogroup" aria-labelledby="fw-title"></div>
-        </div>
-      </li>
+    <div class="grid">
+      <section class="card stage" id="device" aria-labelledby="dev-title"></section>
 
-      <li class="step">
-        <div class="step-head"><span class="step-n" aria-hidden="true">2</span><h2 id="install-title"></h2></div>
-        <div class="step-body">
-          <div class="desk plate">
-            <section class="device" id="device" aria-labelledby="dev-title"></section>
-            <section class="install" aria-labelledby="install-title">
-              <dl class="release" id="release"></dl>
+      <ol class="steps" id="steps">
+        <li class="card step" data-step="0">
+          <button type="button" class="step-head" data-goto="0">
+            <span class="step-n">1</span><span class="step-t" id="s0-title"></span><span class="step-sum" id="s0-sum"></span>
+          </button>
+          <div class="step-body">
+            <p class="step-lead" id="s0-lead"></p>
+            <div id="boards" class="boards" role="radiogroup" aria-labelledby="s0-title"></div>
+            <div class="step-nav"><button type="button" class="btn" id="s0-next"></button></div>
+          </div>
+        </li>
+
+        <li class="card step" data-step="1">
+          <button type="button" class="step-head" data-goto="1">
+            <span class="step-n">2</span><span class="step-t" id="s1-title"></span><span class="step-sum" id="s1-sum"></span>
+          </button>
+          <div class="step-body">
+            <p class="step-lead" id="s1-lead"></p>
+            <div id="prepare"></div>
+            <div class="step-nav"><button type="button" class="btn" id="s1-next"></button></div>
+          </div>
+        </li>
+
+        <li class="card step" data-step="2">
+          <button type="button" class="step-head" data-goto="2">
+            <span class="step-n">3</span><span class="step-t" id="s2-title"></span><span class="step-sum" id="s2-sum"></span>
+          </button>
+          <div class="step-body">
+            <div id="release" class="release"></div>
+            <div class="action">
+              <button type="button" class="btn primary" id="install"></button>
+              <div class="meter" id="meter" hidden>
+                <div class="meter-row"><span id="phase"></span><span id="pct">0%</span></div>
+                <div class="bar"><i id="bar"></i></div>
+              </div>
+            </div>
+            <details class="more">
+              <summary id="more-title"></summary>
               <label class="check">
                 <input type="checkbox" id="erase">
                 <span><b id="erase-label"></b><small id="erase-hint"></small></span>
               </label>
-              <button type="button" class="btn" id="install"></button>
-              <div class="meter" id="meter" hidden>
-                <div class="meter-row"><span id="phase"></span><span id="pct" class="num">0%</span></div>
-                <div class="bar-track"><i id="bar"></i></div>
-              </div>
-            </section>
+              <label class="drop" id="drop">
+                <input type="file" id="file" accept=".bin,application/octet-stream">
+                <span class="drop-ic" id="drop-icon" aria-hidden="true"></span>
+                <span class="drop-tx"><span class="drop-k" id="or-file"></span><b id="drop-title"></b><small id="drop-hint"></small></span>
+                <button type="button" class="btn ghost sm" id="file-clear" hidden></button>
+              </label>
+            </details>
+            <details class="more logs" id="logs-box">
+              <summary><span id="logs-title"></span>
+                <button type="button" class="btn ghost sm" id="copy-log"></button></summary>
+              <div class="log" id="log" role="log" aria-live="polite"></div>
+            </details>
           </div>
+        </li>
 
-          <label class="drop" id="drop">
-            <input type="file" id="file" accept=".bin,application/octet-stream">
-            <span class="drop-ic" id="drop-icon" aria-hidden="true"></span>
-            <span class="drop-tx"><span id="or-file" class="drop-kicker"></span><b id="drop-title"></b><small id="drop-hint"></small></span>
-            <button type="button" class="btn btn--quiet btn--sm" id="file-clear" hidden></button>
-          </label>
-
-          <details class="fold" id="logs-box">
-            <summary><span id="logs-title"></span>
-              <button type="button" class="btn btn--quiet btn--sm" id="copy-log"></button></summary>
-            <div class="log" id="log" role="log" aria-live="polite"></div>
-          </details>
-        </div>
-      </li>
-
-      <li class="step" id="guide-box">
-        <div class="step-head"><span class="step-n" aria-hidden="true">3</span><h2 id="guide-title"></h2></div>
-        <div class="step-body guide" id="guide"></div>
-      </li>
-    </ol>
+        <li class="card step" data-step="3" id="guide-box">
+          <button type="button" class="step-head" data-goto="3">
+            <span class="step-n">4</span><span class="step-t" id="guide-title"></span><span class="step-sum" id="s3-sum"></span>
+          </button>
+          <div class="step-body">
+            <div class="guide" id="guide"></div>
+            <div class="step-nav"><button type="button" class="btn ghost" id="s3-again"></button></div>
+          </div>
+        </li>
+      </ol>
+    </div>
   </main>
 
   <footer class="foot">
-    <p id="foot-note"></p>
-    <p id="foot-photos"></p>
-    <nav aria-label="Project">
+    <span id="foot-note"></span>
+    <nav>
       <a id="foot-src" href="https://github.com/percdotdev/ps5-webkit-autoloader-esp32"></a>
       <a id="foot-rel" href="https://github.com/percdotdev/ps5-webkit-autoloader-esp32/releases/latest"></a>
       <a href="https://github.com/itsPLK/ps5-webkit-autoloader">itsPLK</a>

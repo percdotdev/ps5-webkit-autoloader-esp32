@@ -1,0 +1,45 @@
+/* Board drawings and the scene animations driven by the stage's data-scene. */
+.art { display: block; flex: none; width: auto; height: 100%; max-width: 100%; overflow: visible; }
+.art-shadow { fill: color-mix(in srgb, var(--bg) 70%, black); opacity: 0.55; }
+.art-board { animation: board-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.thumb { display: block; height: 100%; width: auto; max-width: 100%; }
+
+/* Status LED: off by default, coloured by scene. */
+.led { fill: #3b3d43; transition: fill 0.3s; }
+[data-scene="connecting"] .led { fill: var(--warn); animation: blink 0.8s ease-in-out infinite; }
+[data-scene="connected"] .led { fill: var(--accent); filter: drop-shadow(0 0 1.2px var(--accent)); }
+[data-scene="writing"] .led { fill: var(--accent); filter: drop-shadow(0 0 1.2px var(--accent)); animation: blink 0.35s steps(2) infinite; }
+[data-scene="done"] .led, [data-scene="portal"] .led { fill: var(--ok); filter: drop-shadow(0 0 1.2px var(--ok)); }
+[data-scene="error"] .led { fill: var(--bad); }
+
+/* BOOT hint: a ring that pulses over the button while you hold it. */
+.boot-ring { fill: none; stroke: var(--accent); stroke-width: 0.6; opacity: 0; transform-box: fill-box; transform-origin: center; }
+[data-scene="prepare"] .boot-ring { animation: ring 1.6s ease-out infinite; }
+
+/* Cable: hangs below, slides into the port once the board is plugged in. */
+.cable { transform: translateY(26px); opacity: 0; transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s; }
+[data-scene="prepare"] .cable, [data-scene="plugged"] .cable, [data-scene="connecting"] .cable,
+[data-scene="connected"] .cable, [data-scene="writing"] .cable, [data-scene="done"] .cable, [data-scene="error"] .cable {
+  transform: none; opacity: 1;
+}
+[data-scene="prepare"] .cable { animation: plug 3.2s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+.flow { stroke: var(--accent); stroke-dasharray: 1.2 3.2; opacity: 0; }
+[data-scene="writing"] .flow { opacity: 1; animation: flow 0.6s linear infinite; }
+
+/* Wi-Fi waves once the board lives on the PS5. */
+.wave { stroke: var(--ok); opacity: 0; }
+[data-scene="portal"] .wave { animation: wave 2s ease-out infinite; animation-delay: calc(var(--i) * 0.25s); }
+[data-scene="pick"] .art-board, [data-scene="portal"] .art-board { animation: board-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both, float 5s ease-in-out 0.5s infinite; }
+
+@keyframes board-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes float { 50% { transform: translateY(-1.6px); } }
+@keyframes ring { 0% { opacity: 0.9; transform: scale(0.7); } 100% { opacity: 0; transform: scale(1.6); } }
+@keyframes plug { 0%, 12% { transform: translateY(18px); opacity: 0.4; } 40%, 100% { transform: none; opacity: 1; } }
+@keyframes flow { to { stroke-dashoffset: 4.4; } }
+@keyframes wave { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .art-board, .cable, .boot-ring, .flow, .wave, .led { animation: none !important; }
+  [data-scene="prepare"] .boot-ring { opacity: 0.9; }
+  [data-scene="portal"] .wave { opacity: 1; }
+}

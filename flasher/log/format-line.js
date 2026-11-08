@@ -9,7 +9,7 @@ export function formatLine(raw) {
   const s = String(raw).replace(/\r/g, "").replace(/\s+/g, " ").trim();
   if (!s || SKIP.test(s)) return null;
   const wrote = s.match(/^Wrote (\d+) bytes.*?in ([\d.]+) seconds/i);
-  if (wrote) return { text: `${t("wrote")} ${fmtBytes(+wrote[1])}, ${fmtSec(+wrote[2])}`, kind: "hi" };
+  if (wrote) return { text: `${t("wrote")} ${fmtBytes(+wrote[1])} · ${fmtSec(+wrote[2])}`, kind: "hi" };
   if (/^Hash of data verified/i.test(s)) return { text: t("verified"), kind: "hi" };
   if (/^Chip is /i.test(s)) return { text: s.replace(/^Chip is /i, `${t("chip")}  `), kind: "hi" };
   if (/^MAC:/i.test(s)) return { text: s.replace(/^MAC:\s*/i, "MAC  ") };

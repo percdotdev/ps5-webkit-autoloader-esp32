@@ -1,5 +1,7 @@
 import { session, serialOk, dropSession } from "../device/session.js";
-import { renderDevice } from "../device/panel.js";
+import { renderStage } from "../device/stage.js";
+import { renderPrepare } from "../device/prepare.js";
+import { renderSteps, goTo, advance } from "../steps/stepper.js";
 import { renderBoards, renderRelease } from "../firmware/picker.js";
 import { renderFileDrop, wireFileDrop } from "../firmware/file-drop.js";
 import { loadRelease } from "../firmware/release.js";
@@ -19,9 +21,7 @@ const $ = (id) => document.getElementById(id);
 const flow = createFlow(render);
 
 const deviceActions = {
-  connect: flow.connect,
   disconnect: flow.disconnect,
-  reset: flow.reset,
   async copyLink(e) {
     try {
       await navigator.clipboard.writeText(location.href);
@@ -40,7 +40,9 @@ function render() {
   writeUrl();
   renderPageText();
   renderTopbar();
-  renderDevice($("device"), deviceActions);
+  renderSteps();
+  renderStage($("device"), deviceActions);
+  renderPrepare($("prepare"));
   renderBoards($("boards"), pickBoard);
   renderRelease($("release"));
   renderInstall();
@@ -51,8 +53,7 @@ function render() {
 function onShortcut(e) {
   if (!(e.ctrlKey || e.metaKey) || e.key !== "Enter" || state.busy || !serialOk) return;
   e.preventDefault();
-  if (session.loader) flow.install();
-  else flow.connect();
+  if (state.step === 2) flow.install();
 }
 
 function wire() {
@@ -67,6 +68,18 @@ function wire() {
   $("gh").innerHTML = ICON.github;
   $("drop-icon").innerHTML = ICON.upload;
   $("install").addEventListener("click", flow.install);
+  document.querySelectorAll("[data-goto]").forEach((b) => {
+    b.addEventListener("click", () => { if (goTo(Number(b.dataset.goto))) render(); });
+  });
+  $("s0-next").addEventListener("click", () => { advance(); render(); });
+  $("s1-next").addEventListener("click", () => { advance(); render(); });
+  $("s3-again").addEventListener("click", async () => {
+    await flow.disconnect();
+    state.phase = "idle";
+    state.step = 0;
+    state.reached = 0;
+    render();
+  });
   $("erase").addEventListener("change", (e) => { state.eraseAll = e.target.checked; });
   $("copy-log").addEventListener("click", (e) => { e.preventDefault(); copyLog(e.currentTarget); });
   wireFileDrop(render);

@@ -1,12 +1,12 @@
 import { state } from "../app/state.js";
-import { session, serialOk } from "../device/session.js";
+import { serialOk } from "../device/session.js";
 import { t } from "../language/language.js";
 
 function label() {
   if (state.busy) return t("installing");
   if (state.localFile) return t("installFile");
   const ver = state.release?.tag ? ` ${state.release.tag}` : "";
-  return session.loader ? `${t("install")}${ver}` : t("installConnect");
+  return `${t("install")}${ver}`;
 }
 
 export function renderInstall() {
