@@ -4,13 +4,29 @@ import { INK, pcb, holes, chip, smd, button, microUsb, text } from "./parts.js";
 const W = 20.3, H = 52;
 const PCB = "#131416";
 
+const TRACE = "#303238";
+// Copper under the solder mask: [what it carries, path, pulse delay in s].
+const TRACES = [
+  ["usb", "M9.7 48.2 V42 L9.2 41.5 V34.1"],
+  ["usb", "M10.6 48.2 V42 L11.1 41.5 V34.1", 0.12],
+  ["link", "M8.4 29.3 V27.6 L5.6 24.8 V18.8 L6.6 17.8 V17", 0.35],
+  ["link", "M12 29.3 V27.6 L14.6 25 V18.6 L13.6 17.6 V17", 0.47],
+  ["rf", "M10.1 9.2 V6.3"],
+  ["boot", "M14.9 37.1 V35.2 L16.6 33.5 V19.4 L14 16.9"],
+  ["io", "M5.2 37.1 V35.4 L3.8 34 V19.6 L6.3 17.1"],
+  ["led", "M12.5 31.6 H15.6 L17 33 V43.4"],
+  ["io", "M6.3 11 H2.3"], ["io", "M13.9 12.5 H18", 0.2], ["io", "M6.3 14 H2.3", 0.35],
+];
+
 export const picoKit = {
   w: W, h: H,
   led: [16.4, 44.2],
   boot: [14.9, 38.6],
   usb: { cx: 10.15, y: 48.3, kind: "micro" },
+  pcb: pcb(W, H, PCB, 1.2),
+  traces: TRACES,
+  trace: TRACE,
   body: [
-    pcb(W, H, PCB, 1.2),
     holes(1.5, 7.6, 17, (i) => (i < 3 ? INK.gold : INK.silver)),
     holes(18.8, 7.6, 17, (i) => (i < 3 ? INK.gold : INK.silver)),
     `<rect x="4.0" y="1.0" width="12.3" height="5.2" rx="0.4" fill="${INK.silver}" stroke="${INK.silverDark}" stroke-width="0.2"/>`,

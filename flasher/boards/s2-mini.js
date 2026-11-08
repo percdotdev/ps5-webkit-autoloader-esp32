@@ -4,13 +4,32 @@ import { INK, pcb, holes, chip, smd, crystal, button, usbC, traceAntenna, text }
 const W = 25.4, H = 34.3;
 const PCB = "#5a2a72";
 
+const TRACE = "#7b429a";
+// Copper under the solder mask: [what it carries, path, pulse delay in s].
+const TRACES = [
+  ["usb", "M12.1 29.8 V24 L11.4 23.3 V19.3"],
+  ["usb", "M13.3 29.8 V24 L14.0 23.3 V19.3", 0.12],
+  ["power", "M9.8 29.8 V27.4 L8 25.6 V24.6"],
+  ["power", "M8 22.2 V20.6 L9.3 19.3"],
+  ["rf", "M10.6 12.3 V9.2 L7.6 6.2 L6.4 5.8"],
+  ["io", "M15.6 12.3 V9.9"],
+  ["led", "M16.2 17.6 H17.6 L18.6 18.6 V25.9"],
+  ["boot", "M16.2 18.8 H17.2 L19.6 21.2 V27.6 L20.6 28.6"],
+  ["io", "M9.2 14 H6.6 L5.1 12.5 V11.6"],
+  ["io", "M9.2 16.3 H5.1", 0.3],
+  ["io", "M16.2 14 H20.3"],
+  ["io", "M16.2 15.4 H19 L19.8 16.2 H20.3", 0.2],
+];
+
 export const s2Mini = {
   w: W, h: H,
   led: [18.6, 26.6],
   boot: [21.95, 30.1],
   usb: { cx: 12.7, y: 29.9, kind: "c" },
+  pcb: pcb(W, H, PCB, 2.6),
+  traces: TRACES,
+  trace: TRACE,
   body: [
-    pcb(W, H, PCB, 2.6),
     `<circle cx="2.7" cy="2.7" r="1.25" fill="${INK.white}"/><circle cx="2.7" cy="2.7" r="0.75" fill="${INK.hole}"/>`,
     `<circle cx="22.7" cy="2.7" r="1.25" fill="${INK.white}"/><circle cx="22.7" cy="2.7" r="0.75" fill="${INK.hole}"/>`,
     traceAntenna(6.4, 1.3, 12.6, 4.4, "#7f4d98"),

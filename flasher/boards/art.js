@@ -28,17 +28,47 @@ function wifi(b) {
   ).join("") + `</g>`;
 }
 
+// Copper traces under the parts, and the pulses that run along them.
+// Last point of a path like "M1 2 V3 L4 5 H6": tracks the pen through M/L/H/V.
+function endOf(d) {
+  let x = 0, y = 0;
+  for (const [, cmd, args] of d.matchAll(/([MLHV])\s*([-\d.\s]+)/g)) {
+    const n = args.trim().split(/\s+/).map(Number);
+    if (cmd === "H") x = n[0];
+    else if (cmd === "V") y = n[0];
+    else [x, y] = n;
+  }
+  return [x, y];
+}
+
+// Copper under the solder mask. Traces that dive to the other layer end in a via.
+function copper(b) {
+  const lines = b.traces.map(([, d]) =>
+    `<path d="${d}" fill="none" stroke="${b.trace}" stroke-width="0.34" stroke-linecap="round" stroke-linejoin="round"/>`);
+  const vias = b.traces.filter(([kind]) => kind === "io" || kind === "power").map(([, d]) => {
+    const [x, y] = endOf(d);
+    return `<circle cx="${x}" cy="${y}" r="0.34" fill="${b.trace}"/><circle cx="${x}" cy="${y}" r="0.15" fill="#0b0b0c"/>`;
+  });
+  return `<g class="traces">${lines.join("")}${vias.join("")}</g>`;
+}
+
+function signals(b) {
+  return `<g class="signals">` + b.traces.map(([kind, d, delay = 0]) =>
+    `<path class="sig sig-${kind}" d="${d}" pathLength="100" style="--d:${delay}s" fill="none" stroke-width="0.5" stroke-linecap="round"/>`).join("") + `</g>`;
+}
+
 // The big drawing: board, status LED, BOOT hint, cable and Wi-Fi waves.
 export function boardArt(id) {
   const b = BOARDS[id] || s2Mini;
   const [lx, ly] = b.led;
   const [bx, by] = b.boot;
-  const pad = 16;
-  return `<svg class="art" viewBox="${-pad} ${-pad - 4} ${b.w + pad * 2} ${b.h + pad + 22}" aria-hidden="true">` +
+  // Tight frame so the board fills the stage; waves and cable may spill past it.
+  const side = 4, top = 15, bottom = 14;
+  return `<svg class="art" viewBox="${-side} ${-top} ${b.w + side * 2} ${b.h + top + bottom}" aria-hidden="true">` +
     `<ellipse class="art-shadow" cx="${b.w / 2}" cy="${b.h + 5}" rx="${b.w * 0.55}" ry="2.4"/>` +
     wifi(b) +
     cable(b) +
-    `<g class="art-board">${b.body}` +
+    `<g class="art-board">${b.pcb}${copper(b)}${signals(b)}${b.body}` +
     `<circle class="led" cx="${lx}" cy="${ly}" r="0.95"/>` +
     `<circle class="boot-ring" cx="${bx}" cy="${by}" r="3.2"/>` +
     `</g></svg>`;
@@ -47,5 +77,5 @@ export function boardArt(id) {
 // The small drawing in the board picker.
 export function boardThumb(id) {
   const b = BOARDS[id] || s2Mini;
-  return `<svg class="thumb" viewBox="-1 -1 ${b.w + 2} ${b.h + 2}" aria-hidden="true">${b.body}</svg>`;
+  return `<svg class="thumb" viewBox="-1 -1 ${b.w + 2} ${b.h + 2}" aria-hidden="true">${b.pcb}${copper(b)}${b.body}</svg>`;
 }

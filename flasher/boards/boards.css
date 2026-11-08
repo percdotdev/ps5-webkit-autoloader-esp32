@@ -26,6 +26,21 @@
 .flow { stroke: var(--accent); stroke-dasharray: 1.2 3.2; opacity: 0; }
 [data-scene="writing"] .flow { opacity: 1; animation: flow 0.6s linear infinite; }
 
+/* Signals on the copper: a short bright pulse that runs from the source to the part.
+   Writing: USB data into the chip (through the USB bridge where there is one).
+   Prepare: the BOOT line. Portal: the antenna feed. */
+.sig { stroke: var(--accent); stroke-dasharray: 14 86; stroke-dashoffset: 100; opacity: 0; filter: drop-shadow(0 0 0.5px var(--accent)); }
+.sig-rf, .sig-power { stroke: var(--ok); filter: drop-shadow(0 0 0.5px var(--ok)); }
+[data-scene="connecting"] .sig-usb { opacity: 1; animation: run 1.6s linear infinite; animation-delay: var(--d); }
+[data-scene="connected"] .sig-usb, [data-scene="connected"] .sig-link { opacity: 1; animation: run 2.4s linear infinite; animation-delay: var(--d); }
+[data-scene="writing"] .sig-usb, [data-scene="writing"] .sig-link { opacity: 1; animation: run 0.7s linear infinite; animation-delay: var(--d); }
+[data-scene="writing"] .sig-led, [data-scene="writing"] .sig-power { opacity: 1; animation: run 1.4s linear infinite; animation-delay: var(--d); }
+[data-scene="prepare"] .sig-boot { opacity: 1; animation: run 1.6s linear infinite; }
+[data-scene="done"] .sig-power, [data-scene="portal"] .sig-power { opacity: 1; animation: run 2s linear infinite; }
+[data-scene="portal"] .sig-rf { opacity: 1; animation: run 1s linear infinite; animation-delay: var(--d); }
+[data-scene="portal"] .sig-io { opacity: 0.7; stroke: var(--ok); animation: run 3s linear infinite; animation-delay: var(--d); }
+@keyframes run { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+
 /* Wi-Fi waves once the board lives on the PS5. */
 .wave { stroke: var(--ok); opacity: 0; }
 [data-scene="portal"] .wave { animation: wave 2s ease-out infinite; animation-delay: calc(var(--i) * 0.25s); }
@@ -39,7 +54,7 @@
 @keyframes wave { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .art-board, .cable, .boot-ring, .flow, .wave, .led { animation: none !important; }
+  .art-board, .cable, .boot-ring, .flow, .wave, .led, .sig { animation: none !important; }
   [data-scene="prepare"] .boot-ring { opacity: 0.9; }
   [data-scene="portal"] .wave { opacity: 1; }
 }
