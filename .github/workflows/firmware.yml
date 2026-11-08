@@ -140,6 +140,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download bins
         uses: actions/download-artifact@v4
         with:
@@ -162,22 +165,29 @@ jobs:
           find bins -name '*.merged.bin' -exec cp -f {} release/ \;
           (cd release && sha256sum *.merged.bin > SHA256SUMS)
           cat release/SHA256SUMS
+          # payload-version.txt reads like "0.7.1 (f4fab6b)".
           PAYLOAD="$(tr -d '[:space:]' < common/payload-version.txt 2>/dev/null || echo unknown)"
           VER="${PAYLOAD%%(*}"
           VER="${VER:-unknown}"
-          TITLE="itsPLK ${PAYLOAD}"
-          NOTES="itsPLK/ps5-webkit-autoloader ${PAYLOAD}. Firmware ${GITHUB_SHA::12}. Flash at 0x0. S2: esp32-arduino.s2.merged.bin. Check a download with: sha256sum -c SHA256SUMS --ignore-missing"
+          PSHA="$(sed -n 's/.*(\(.*\)).*/\1/p' <<< "$PAYLOAD")"
+          PSHA="${PSHA:-unknown}"
+          TITLE="itsPLK ${VER} (${PSHA})"
+          sed -e "s|{{VER}}|${VER}|g" -e "s|{{PSHA}}|${PSHA}|g" \
+              -e "s|{{SHA}}|${GITHUB_SHA}|g" -e "s|{{SHORT}}|${GITHUB_SHA::7}|g" \
+              -e "s|{{REPO}}|${{ github.repository }}|g" \
+              .github/release-notes.md > notes.md
+          cat notes.md
           ls -lh release
           publish() {
             local tag="$1"
             if gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1; then
-              gh release edit "$tag" --repo "${{ github.repository }}" --title "$TITLE" --notes "$NOTES"
+              gh release edit "$tag" --repo "${{ github.repository }}" --title "$TITLE" --notes-file notes.md
               gh release upload "$tag" --repo "${{ github.repository }}" --clobber release/*.merged.bin release/SHA256SUMS
             else
               gh release create "$tag" \
                 --repo "${{ github.repository }}" \
                 --title "$TITLE" \
-                --notes "$NOTES" \
+                --notes-file notes.md \
                 release/*.merged.bin release/SHA256SUMS
             fi
           }
