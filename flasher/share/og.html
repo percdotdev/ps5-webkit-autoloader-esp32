@@ -2,52 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>OG</title>
+  <title>WebKit Autoloader card</title>
+  <meta name="description" content="Source for og.png, the link preview of the PS5 WebKit Autoloader flasher. Screenshot it at 1200 by 630.">
   <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700&family=Onest:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
   <style>
-    html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #171717; }
+    /* Hallmark · shape: app screen · genre: modern-minimal · theme: Terrazzo (deal 2/3, seed browser-tool-flashes-firmware-7770·7b13632d·2026-11-08·r0) · redesign: full
+     * nav: none, a share card · signature: the four real boards on one plate · states: one, a still image · terrazzo: off-white
+     * axes: light/geometric-sans/warm · posture: restrained · contrast: pass · v2.0.0 */
+    /* Hallmark · reworded "PS5 WebKit Autoloader" to "WebKit Autoloader for ESP32" · the card names the board it runs on */
+    /* Hallmark · dropped 1234567 · the seven step ticks are gone because the flasher no longer has seven screens */
+    /* Hallmark · dismissed 25 · the p is a one-sentence lede on a share card, 28ch is the floor for that */
+    /* Hallmark · pre-emit critique: P4 H4 E5 S5 R5 V4 · weakest: P, a preview card can only name the tool and show the boards */
+    :root {
+      --color-paper: oklch(96% 0.009 82); --color-paper-3: oklch(87.5% 0.014 80); --color-plate: oklch(99.5% 0.003 82);
+      --color-ink: oklch(16% 0.006 60); --color-ink-2: oklch(27% 0.006 60); --color-muted: oklch(46% 0.01 60);
+      --color-rule: oklch(81% 0.012 80); --color-accent-text: oklch(47% 0.15 38);
+      --font-display: "Syne", ui-sans-serif, sans-serif; --font-body: "Onest", ui-sans-serif, sans-serif;
+      --font-outlier: "JetBrains Mono", ui-monospace, monospace;
+      --space-xs: 8px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; overflow-x: clip; background: var(--color-paper); color: var(--color-ink); }
     body {
-      box-sizing: border-box;
-      color: #f2f2f2;
-      font: 22px/1.4 ui-monospace, "Cascadia Mono", "Segoe UI Mono", Consolas, monospace;
-      padding: 72px 80px 56px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      width: min(1200px, 100%); min-height: 630px; font-family: var(--font-body); padding: var(--space-2xl);
+      display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-2xl); align-items: center;
     }
-    .kicker { color: #8d8d8d; font-size: 16px; letter-spacing: 0.14em; }
-    h1 { margin: 14px 0 0; font-size: 52px; font-weight: 600; letter-spacing: -0.03em; }
-    .sub { color: #8d8d8d; margin: 18px 0 0; font-size: 22px; }
-    .sub b { color: #f2f2f2; font-weight: 600; }
-    .track { display: flex; align-items: center; margin-top: 52px; width: 520px; }
-    .tick {
-      width: 36px; height: 36px; border: 1px solid #f2f2f2; flex: none;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-variant-numeric: tabular-nums;
+    h1 {
+      margin: 0; font: 700 60px/1 var(--font-display); letter-spacing: -0.025em;
+      text-wrap: balance; overflow-wrap: break-word; min-width: 0;
     }
-    .tick.on { background: #f2f2f2; color: #171717; }
-    .rail { flex: 1; height: 1px; background: #2c2c2c; min-width: 12px; }
-    footer { color: #8d8d8d; font-size: 16px; display: flex; justify-content: space-between; }
+    p { margin: var(--space-lg) 0 0; font-size: 26px; line-height: 1.35; color: var(--color-ink-2); max-width: 28ch; text-wrap: pretty; }
+    .steps { margin: var(--space-xl) 0 0; padding: var(--space-md) 0 0; list-style: none; border-top: 2px solid var(--color-ink); display: grid; gap: var(--space-xs); font-size: 22px; }
+    .steps li { display: grid; grid-template-columns: 32px 1fr; }
+    .steps b { font-family: var(--font-display); }
+    .plate {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: var(--color-plate);
+      border: 2px solid var(--color-ink); box-shadow: 14px 14px 0 var(--color-paper-3);
+    }
+    figure { margin: 0; padding: var(--space-md) var(--space-lg); display: grid; gap: var(--space-xs); border-right: 1px solid var(--color-rule); border-bottom: 1px solid var(--color-rule); }
+    figure:nth-child(2n) { border-right: 0; }
+    figure:nth-child(n + 3) { border-bottom: 0; }
+    figure img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: contain; }
+    figcaption { font: 500 16px/1 var(--font-outlier); color: var(--color-muted); }
+    figure:first-child figcaption { color: var(--color-accent-text); }
+    @media (max-width: 60rem) { body { grid-template-columns: minmax(0, 1fr); padding: var(--space-lg); } h1 { font-size: 40px; } }
   </style>
 </head>
 <body>
   <div>
-    <div class="kicker">ESP32</div>
-    <h1>PS5 WebKit Autoloader</h1>
-    <p class="sub">Flash · Join <b>ESP32_PORTAL</b> · Open User’s Guide</p>
-    <div class="track" aria-hidden="true">
-      <div class="tick on">1</div><div class="rail"></div>
-      <div class="tick">2</div><div class="rail"></div>
-      <div class="tick">3</div><div class="rail"></div>
-      <div class="tick">4</div><div class="rail"></div>
-      <div class="tick">5</div><div class="rail"></div>
-      <div class="tick">6</div><div class="rail"></div>
-      <div class="tick">7</div>
-    </div>
+    <h1>WebKit Autoloader for ESP32</h1>
+    <p>Flash the board from Chrome, then open the User’s Guide on your PS5.</p>
+    <ol class="steps">
+      <li><b>1</b>Pick your board</li>
+      <li><b>2</b>Connect and install</li>
+      <li><b>3</b>Join ESP32_PORTAL on the PS5</li>
+    </ol>
   </div>
-  <footer>
-    <span>EN · ES</span>
-    <span>percdotdev.github.io</span>
-  </footer>
+  <div class="plate">
+    <figure><img src="../photos/s2-mini.webp" width="340" height="448" alt=""><figcaption>ESP32-S2</figcaption></figure>
+    <figure><img src="../photos/s3-devkitc-1.webp" width="664" height="565" alt=""><figcaption>ESP32-S3</figcaption></figure>
+    <figure><img src="../photos/c3-super-mini.webp" width="461" height="632" alt=""><figcaption>ESP32-C3</figcaption></figure>
+    <figure><img src="../photos/pico-kit.webp" width="720" height="275" alt=""><figcaption>ESP32</figcaption></figure>
+  </div>
 </body>
 </html>

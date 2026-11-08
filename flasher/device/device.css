@@ -1,40 +1,25 @@
-/* Device panel and board drawing. */
-.device {
-  position: sticky; top: 76px;
-  display: flex; flex-direction: column; align-items: center; text-align: center;
-  padding: 28px 22px 22px; min-height: 460px;
-}
-.device-art { width: 148px; margin: 4px 0 18px; }
-.art { width: 100%; height: auto; display: block; overflow: visible; }
-.art-pcb { fill: var(--panel-2); stroke: var(--line-2); stroke-width: 1.5; }
-.art-usb { fill: var(--line-2); }
-.art-pin circle { fill: var(--bg); stroke: var(--line-2); stroke-width: 1.5; }
-.art-can { fill: color-mix(in srgb, var(--fg) 6%, var(--panel-2)); stroke: var(--line-2); stroke-width: 1.5; }
-.art-txt { font: 600 9px var(--mono); fill: var(--dim); letter-spacing: 0.02em; }
-.art-btn { fill: var(--line); stroke: var(--line-2); }
-.art-cap { font: 500 6.5px var(--mono); fill: var(--faint); }
-.art-led { fill: var(--faint); transition: fill 0.3s; }
-[data-state="connecting"] .art-led { fill: var(--warn); animation: blink 1s ease-in-out infinite; }
-[data-state="connected"] .art-led { fill: var(--accent); filter: drop-shadow(0 0 4px var(--accent)); }
-[data-state="done"] .art-led { fill: var(--ok); filter: drop-shadow(0 0 4px var(--ok)); }
-[data-state="error"] .art-led, [data-state="unsupported"] .art-led { fill: var(--bad); }
-[data-state="idle"] .art, [data-state="unsupported"] .art { opacity: 0.75; }
-.device-title { margin: 0 0 6px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
-.device-body { margin: 0 auto; max-width: 18rem; color: var(--dim); text-wrap: pretty; }
-.device-actions { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
-.facts { width: 100%; margin: 12px 0 0; display: grid; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
-.facts div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; text-align: left; }
-.facts div + div { border-top: 1px solid var(--line); }
-.facts dt { color: var(--dim); }
-.facts dd { margin: 0; font: 400 12px var(--mono); text-align: right; overflow-wrap: anywhere; }
-.help { width: 100%; margin-top: auto; padding-top: 22px; text-align: left; color: var(--dim); font-size: 13px; }
-.help summary { cursor: pointer; text-align: center; list-style: none; color: var(--dim); }
-.help summary::-webkit-details-marker { display: none; }
-.help summary:hover { color: var(--fg); }
-.help[open] summary { margin-bottom: 10px; color: var(--fg); }
-.help ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
-.help p { margin: 10px 0 0; }
+/* The device half of the install card: what is plugged in, and what to do about it. */
+.device { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-sm); min-width: 0; }
+.device > .facts { align-self: stretch; }
+.device-title { font-size: var(--text-section); }
+.device-body { color: var(--color-ink-2); max-width: 40ch; }
+.device[data-state="error"] .device-title, .device[data-state="unsupported"] .device-title { color: var(--color-error); }
+.device[data-state="done"] .device-title { color: var(--color-success); }
+.device[data-state="connecting"] .device-title { animation: blink 1.2s var(--ease-in-out) infinite; }
+.device-actions { display: flex; flex-wrap: wrap; gap: var(--space-xs); margin-top: var(--space-xs); }
+.btn .hint { font-size: var(--text-xs); padding: 0 var(--space-2xs); background: var(--color-paper-2); color: var(--color-muted); }
+@media (max-width: 40rem), (pointer: coarse) { .btn .hint { display: none; } }
 
-@media (max-width: 880px) {
-  .device { position: static; min-height: 0; }
+.facts { display: grid; border-top: var(--rule-bar) solid var(--color-ink); }
+.facts div {
+  display: grid; grid-template-columns: minmax(0, 5rem) minmax(0, 1fr); gap: var(--space-sm);
+  padding: var(--space-xs) 0; border-bottom: var(--rule-hair) solid var(--color-rule);
 }
+.facts dt { color: var(--color-muted); font-size: var(--text-sm); }
+.facts dd { font-family: var(--font-outlier); font-weight: 500; font-size: var(--text-sm); overflow-wrap: anywhere; }
+
+.help { margin-top: auto; padding-top: var(--space-md); font-size: var(--text-sm); color: var(--color-ink-2); }
+.help summary { cursor: pointer; font-weight: 500; color: var(--color-ink); width: fit-content; }
+.help summary:hover { text-decoration: underline; text-decoration-color: var(--color-accent); }
+.help ul { margin: var(--space-xs) 0 0; padding-left: var(--space-md); display: grid; gap: var(--space-2xs); }
+.help p { margin-top: var(--space-xs); }

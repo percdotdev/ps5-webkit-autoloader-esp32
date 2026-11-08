@@ -1,0 +1,16 @@
+/* Hallmark · shape: app screen · genre: modern-minimal · theme: Terrazzo (deal 2/3, seed browser-tool-flashes-firmware-7770·7b13632d·2026-11-08·r0) · redesign: full
+ * nav: top bar, kept · signature: the four real boards as sample cards, photographed, with their chip codes · states: idle, connecting, connected, installing, done, error, unsupported · terrazzo: off-white, black when dark
+ * axes: light/geometric-sans/warm · posture: restrained · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V4 · weakest: S, the S3 photo is isometric while the other three are flat-on; kept it because it is the only licensed photo of that board */
+/* Hallmark · waive 39b · button.board is a radio card holding a board photo and its chip code · picking the board by its photo is the screen's signature */
+/* Hallmark · waive 72 · div.desk overflow is the help list inside a closed details · opened, the install card grows to hold the driver links */
+/* Hallmark · reworded "Firmware" to "Pick your board" · the step head says what the visitor does there */
+@import url("./tokens.css");
+@import url("./base.css");
+@import url("./layout.css");
+@import url("../ui/controls.css");
+@import url("../firmware/firmware.css");
+@import url("../device/device.css");
+@import url("../install/install.css");
+@import url("../log/log.css");
+@import url("../guide/guide.css");

@@ -7,6 +7,7 @@ const TEXT = {
   "title": "title",
   "lead": "lead",
   "fw-title": "fw",
+  "install-title": "installTitle",
   "erase-label": "erase",
   "erase-hint": "eraseHint",
   "or-file": "orFile",
@@ -16,6 +17,7 @@ const TEXT = {
   "foot-note": "footNote",
   "foot-src": "source",
   "foot-rel": "releases",
+  "foot-photos": "footPhotos",
 };
 
 export function renderPageText() {
