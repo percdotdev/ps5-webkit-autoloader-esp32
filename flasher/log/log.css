@@ -1,0 +1,13 @@
+/* Log console. */
+.sum-ic { font: 600 11px var(--mono); }
+.log {
+  height: 15rem; overflow: auto; padding: 8px 0; border-top: 1px solid var(--line);
+  font: 12px/1.5 var(--mono); background: color-mix(in srgb, var(--bg) 50%, var(--panel));
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.log:empty::before { content: "—"; display: block; padding: 4px 20px; color: var(--faint); }
+.log-row { display: grid; grid-template-columns: 3rem 1fr; gap: 12px; padding: 2px 20px; color: var(--dim); }
+.log-row time { color: var(--faint); font-variant-numeric: tabular-nums; }
+.log-row span { overflow-wrap: anywhere; }
+.log-row.hi { color: var(--fg); }
+.log-row.bad { color: var(--bad); }

@@ -1,0 +1,40 @@
+/* Device panel and board drawing. */
+.device {
+  position: sticky; top: 76px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 28px 22px 22px; min-height: 460px;
+}
+.device-art { width: 148px; margin: 4px 0 18px; }
+.art { width: 100%; height: auto; display: block; overflow: visible; }
+.art-pcb { fill: var(--panel-2); stroke: var(--line-2); stroke-width: 1.5; }
+.art-usb { fill: var(--line-2); }
+.art-pin circle { fill: var(--bg); stroke: var(--line-2); stroke-width: 1.5; }
+.art-can { fill: color-mix(in srgb, var(--fg) 6%, var(--panel-2)); stroke: var(--line-2); stroke-width: 1.5; }
+.art-txt { font: 600 9px var(--mono); fill: var(--dim); letter-spacing: 0.02em; }
+.art-btn { fill: var(--line); stroke: var(--line-2); }
+.art-cap { font: 500 6.5px var(--mono); fill: var(--faint); }
+.art-led { fill: var(--faint); transition: fill 0.3s; }
+[data-state="connecting"] .art-led { fill: var(--warn); animation: blink 1s ease-in-out infinite; }
+[data-state="connected"] .art-led { fill: var(--accent); filter: drop-shadow(0 0 4px var(--accent)); }
+[data-state="done"] .art-led { fill: var(--ok); filter: drop-shadow(0 0 4px var(--ok)); }
+[data-state="error"] .art-led, [data-state="unsupported"] .art-led { fill: var(--bad); }
+[data-state="idle"] .art, [data-state="unsupported"] .art { opacity: 0.75; }
+.device-title { margin: 0 0 6px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.device-body { margin: 0 auto; max-width: 18rem; color: var(--dim); text-wrap: pretty; }
+.device-actions { display: flex; gap: 8px; justify-content: center; margin-top: 20px; }
+.facts { width: 100%; margin: 12px 0 0; display: grid; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.facts div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; text-align: left; }
+.facts div + div { border-top: 1px solid var(--line); }
+.facts dt { color: var(--dim); }
+.facts dd { margin: 0; font: 400 12px var(--mono); text-align: right; overflow-wrap: anywhere; }
+.help { width: 100%; margin-top: auto; padding-top: 22px; text-align: left; color: var(--dim); font-size: 13px; }
+.help summary { cursor: pointer; text-align: center; list-style: none; color: var(--dim); }
+.help summary::-webkit-details-marker { display: none; }
+.help summary:hover { color: var(--fg); }
+.help[open] summary { margin-bottom: 10px; color: var(--fg); }
+.help ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.help p { margin: 10px 0 0; }
+
+@media (max-width: 880px) {
+  .device { position: static; min-height: 0; }
+}

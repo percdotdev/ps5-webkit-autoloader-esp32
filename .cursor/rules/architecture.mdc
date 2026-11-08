@@ -7,7 +7,17 @@ alwaysApply: true
 
 The tree is the product. Top-level names are domains, not languages.
 
-- `flasher/` — Chrome/Edge writer. Flat. One concern per file (state, log, serial write, copy, screens).
+- `flasher/` — Chrome/Edge writer, served by GitHub Pages. Only `index.html` sits at its root; everything else lives in one folder per feature:
+  - `app/` — entry (`main.js`), page state, URL, theme, top bar, page-wide CSS.
+  - `device/` — serial session (esptool-js) and the device panel.
+  - `firmware/` — board catalog, latest release, picker, local `.bin` drop.
+  - `install/` — install flow, flash write, progress meter, wake lock.
+  - `log/` — log console and esptool line formatting.
+  - `guide/` — PS5 setup steps.
+  - `language/` — `t()` plus one strings file per language.
+  - `ui/` — shared DOM builder, icons, number formatting, button/toggle CSS.
+  - `share/` — Open Graph card (`og.html` source, `og.png`).
+  - `bin/` — merged images, fetched by the pages workflow. Not in git.
 - `host/installer/` — pages the PS5 browser loads from the board.
 - `host/packed/` — generated AppCache tree. Paths are the protocol. Do not rename or regroup them.
 - `pack/` — turn an itsPLK checkout into `host/packed` and a LittleFS image.
@@ -19,7 +29,9 @@ The tree is the product. Top-level names are domains, not languages.
 - New code goes in the domain it changes, not in a shared junk drawer.
 - One responsibility per file. Split a file when a second concern shows up, not on a line count.
 - No `utils/`, `common/`, `misc/`, or `helpers/` unless the name says exactly what is inside.
-- Keep a directory flat. Do not add a subdirectory next to loose files in the same folder.
+- Keep a directory flat. Do not add a subdirectory next to loose files in the same folder (a site root's `index.html` is the one exception).
+- Each feature folder owns its CSS next to its JS.
+- File names are kebab-case and say what is inside (`board-art.js`, `wake-lock.js`).
 - Prefer a direct function over a new abstraction. Do not introduce a base class, registry, or framework to share two call sites.
 - Co-locate code that ships together. The flasher does not import the packer. The portal does not import flasher UI.
 - Delete unused packers and scripts instead of leaving a compatibility path.

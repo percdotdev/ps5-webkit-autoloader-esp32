@@ -37,12 +37,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          mkdir -p flasher/firmware
+          mkdir -p flasher/bin
           gh release download latest \
             --repo "${{ github.repository }}" \
             --pattern '*.merged.bin' \
-            --dir flasher/firmware
-          ls -lh flasher/firmware
+            --dir flasher/bin
+          ls -lh flasher/bin
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

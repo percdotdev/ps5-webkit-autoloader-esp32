@@ -1,0 +1,58 @@
+/* Page frame: top bar, intro, two-column grid, cards, footer. */
+.top {
+  position: sticky; top: 0; z-index: 10;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px);
+}
+.top-in {
+  max-width: 1080px; margin: 0 auto; padding: 0 16px; height: 56px;
+  display: flex; align-items: center; gap: 12px;
+}
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; letter-spacing: -0.01em; }
+.mark { width: 24px; height: 24px; flex: none; }
+.mark rect { fill: var(--fg); }
+.mark path { fill: none; stroke: var(--bg); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.pill {
+  display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--panel);
+  font-size: 12.5px; font-weight: 500; color: var(--dim); white-space: nowrap;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); flex: none; }
+.pill[data-state="connecting"] .dot, .pill[data-state="installing"] .dot { background: var(--warn); animation: blink 1s ease-in-out infinite; }
+.pill[data-state="connected"] .dot { background: var(--accent); }
+.pill[data-state="done"] .dot { background: var(--ok); }
+.pill[data-state="error"] .dot, .pill[data-state="unsupported"] .dot { background: var(--bad); }
+.pill[data-state="connected"], .pill[data-state="done"] { color: var(--fg); }
+.top-tools { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+main { flex: 1; width: 100%; max-width: 1080px; margin: 0 auto; padding: 40px 16px 24px; }
+.intro { margin: 0 0 28px; max-width: 40rem; }
+.intro h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.15; font-weight: 600; letter-spacing: -0.025em; text-wrap: balance; }
+.intro p { margin: 0; color: var(--dim); font-size: 15px; text-wrap: pretty; }
+.grid { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 16px; align-items: start; }
+.col { display: grid; gap: 16px; min-width: 0; }
+.card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px; min-width: 0;
+}
+.label {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 12px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--dim);
+}
+.foot {
+  max-width: 1080px; width: 100%; margin: 0 auto; padding: 20px 16px 32px;
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;
+  color: var(--faint); font-size: 12.5px;
+}
+.foot nav { display: flex; gap: 16px; }
+.foot a { color: var(--dim); text-decoration: none; }
+.foot a:hover { color: var(--fg); }
+
+@media (max-width: 880px) {
+  .grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  main { padding-top: 28px; }
+  .intro h1 { font-size: 23px; }
+  .pill { display: none; }
+}
