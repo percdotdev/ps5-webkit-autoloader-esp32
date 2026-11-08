@@ -7,7 +7,7 @@ import { clearLog, logLine } from "../log/log.js";
 import { fmtBytes } from "../ui/format.js";
 import { showProgress, endProgress, hideProgress } from "./progress.js";
 import { holdAwake, releaseAwake } from "./wake-lock.js";
-import { writeImage } from "./write.js";
+import { writeImage, startFirmware } from "./write.js";
 import { advance } from "../steps/stepper.js";
 
 // " · 40 s left", once there is enough data to guess.
@@ -101,8 +101,10 @@ export function createFlow(render) {
       state.phase = "installing";
       render();
       await write();
-      logLine(t("phDone"), "hi");
-      endProgress(t("phDone"), "ok");
+      state.started = await startFirmware();
+      const done = state.started ? t("phDone") : t("phDonePress");
+      logLine(done, "hi");
+      endProgress(done, "ok");
       state.phase = "done";
       advance();
       await dropSession();

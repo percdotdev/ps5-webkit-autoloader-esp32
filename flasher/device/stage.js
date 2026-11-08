@@ -10,7 +10,7 @@ function scene() {
   if (!serialOk) return "pick";
   if (state.step === 0) return "pick";
   if (state.step === 1) return "prepare";
-  if (state.step === 3) return "portal";
+  if (state.step === 3) return state.started ? "portal" : "press";
   const p = state.phase;
   if (p === "installing") return "writing";
   if (p === "connecting" || p === "connected" || p === "done" || p === "error") return p;

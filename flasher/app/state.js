@@ -7,6 +7,7 @@ export const state = {
   step: 0,     // open step: 0 board, 1 plug in, 2 install, 3 PS5
   reached: 0,  // furthest step unlocked
   busy: false,
+  started: false, // the board rebooted into the new firmware on its own
   eraseAll: false,
   localFile: null, // { name, data }
   release: undefined, // undefined while loading, null when unknown
