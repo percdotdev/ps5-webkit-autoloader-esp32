@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: itsPLK/ps5-webkit-autoloader
-          ref: v0.7.0
+          ref: v0.7.1
           path: webkit-autoloader
           submodules: false
 
@@ -74,7 +74,7 @@ jobs:
       - name: Pack payload
         env:
           BUILD_TYPE: stable
-          WKAL_REF: v0.7.0
+          WKAL_REF: v0.7.1
         run: bash ./pack/pack_payload.sh
 
       - name: Build shared image
