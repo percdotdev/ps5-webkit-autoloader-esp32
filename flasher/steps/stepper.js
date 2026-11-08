@@ -2,6 +2,7 @@ import { state } from "../app/state.js";
 import { session } from "../device/session.js";
 import { BOARD_NAME } from "../firmware/catalog.js";
 import { t } from "../language/language.js";
+import { ICON } from "../ui/icons.js";
 
 const LAST_STEP = 3;
 
@@ -34,7 +35,9 @@ export function renderSteps() {
     const head = li.querySelector(".step-head");
     head.setAttribute("aria-expanded", String(i === state.step));
     head.disabled = state.busy || i > state.reached;
-    li.querySelector(".step-n").textContent = kind === "done" ? "✓" : String(i + 1);
+    const n = li.querySelector(".step-n");
+    if (kind === "done") n.innerHTML = ICON.check;
+    else n.textContent = String(i + 1);
     const sum = li.querySelector(".step-sum");
     if (sum) sum.textContent = summary(i);
   });

@@ -4,24 +4,22 @@
   <meta charset="utf-8">
   <title>WebKit Autoloader card</title>
   <meta name="robots" content="noindex">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600&family=JetBrains+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400&display=swap">
   <style>
     /* Source for og.png. Render at 1200 x 630. */
-    :root { --bg: #0b0b0d; --panel: #121216; --line: #24242b; --fg: #ededf0; --dim: #9898a3; --accent: #6e9bff; }
+    :root { --bg: #141415; --deep: #0f0f10; --fg: #ededed; --dim: #a1a1a6; --accent: #e39a62; }
     html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: var(--bg); color: var(--fg); }
     body {
-      box-sizing: border-box; padding: 72px 80px; font-family: Inter, system-ui, sans-serif;
+      box-sizing: border-box; padding: 72px 80px; font-family: Geist, system-ui, sans-serif;
       display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 48px;
-      background:
-        radial-gradient(50% 60% at 75% 50%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
-        radial-gradient(color-mix(in srgb, var(--fg) 7%, transparent) 1px, transparent 1px) 0 0 / 22px 22px, var(--bg);
+      background: var(--bg);
     }
-    h1 { margin: 0; font-size: 64px; line-height: 1.02; font-weight: 600; letter-spacing: -0.03em; }
+    h1 { margin: 0; font-size: 64px; line-height: 1.04; font-weight: 500; letter-spacing: -0.03em; }
     p { margin: 24px 0 0; font-size: 24px; line-height: 1.4; color: var(--dim); }
     ol { margin: 36px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; font-size: 20px; }
     li { display: flex; align-items: center; gap: 14px; }
-    li b { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--bg); font-size: 16px; }
-    .boards { display: flex; align-items: flex-end; justify-content: center; gap: 28px; height: 360px; }
+    li b { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--accent); color: var(--accent); font: 400 15px/1 "Geist Mono", monospace; }
+    .boards { padding: 32px 24px 24px; border-radius: 20px; background: var(--deep); display: flex; align-items: flex-end; justify-content: center; gap: 28px; height: 360px; }
     .boards > div { height: 100%; display: flex; align-items: flex-end; }
     .boards svg { height: auto; width: 100%; }
     .b-s2 { width: 120px; } .b-s3 { width: 92px; } .b-c3 { width: 96px; } .b-pico { width: 82px; }
@@ -30,7 +28,7 @@
 <body>
   <div>
     <h1>WebKit Autoloader for ESP32</h1>
-    <p>Flash your board from Chrome in three steps.</p>
+    <p>Flash your board from Chrome in three steps</p>
     <ol>
       <li><b>1</b>Choose your board</li>
       <li><b>2</b>Plug it in</li>

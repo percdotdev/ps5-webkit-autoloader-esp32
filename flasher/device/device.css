@@ -1,33 +1,23 @@
-/* The stage: the board drawing acting out the current step, with a caption under it. */
-.stage {
-  position: sticky; top: 76px; display: grid; grid-template-rows: auto auto; gap: 8px;
-  padding: 0; overflow: hidden;
-}
+/* The stage: the board acting out the current step, with a caption under it. */
+.stage { position: sticky; top: 80px; display: grid; padding: 0; overflow: hidden; }
 .stage-art {
-  height: 380px; display: flex; align-items: center; justify-content: center; padding: 24px 24px 0; overflow: hidden;
-  background:
-    radial-gradient(70% 60% at 50% 40%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%),
-    radial-gradient(color-mix(in srgb, var(--fg) 8%, transparent) 1px, transparent 1px) 0 0 / 16px 16px;
-  border-bottom: 1px solid var(--line);
+  height: 380px; display: flex; align-items: center; justify-content: center;
+  padding: 24px 24px 0; overflow: hidden;
+  background: var(--deep); border-bottom: 1px solid var(--line);
 }
-.stage[data-scene="done"] .stage-art, .stage[data-scene="portal"] .stage-art {
-  background:
-    radial-gradient(70% 60% at 50% 40%, color-mix(in srgb, var(--ok) 10%, transparent), transparent 70%),
-    radial-gradient(color-mix(in srgb, var(--fg) 8%, transparent) 1px, transparent 1px) 0 0 / 16px 16px;
-}
-.stage-info { display: grid; gap: 6px; justify-items: start; padding: 16px 22px 22px; }
-.stage-title { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.stage-info { display: grid; gap: 4px; justify-items: start; padding: 16px 20px 20px; }
+.stage-title { margin: 0; font-size: 18px; line-height: 24px; font-weight: 500; }
 .stage-body { margin: 0; color: var(--dim); text-wrap: pretty; }
 .stage[data-scene="error"] .stage-title { color: var(--bad); }
 .stage[data-scene="done"] .stage-title, .stage[data-scene="portal"] .stage-title { color: var(--ok); }
 .stage-info .btn { margin-top: 8px; }
-.facts { width: 100%; margin: 8px 0 0; display: grid; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.facts { width: 100%; margin: 12px 0 0; display: grid; border: 1px solid var(--line); border-radius: var(--radius-sm); }
 .facts div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; }
 .facts div + div { border-top: 1px solid var(--line); }
 .facts dt { color: var(--dim); }
-.facts dd { margin: 0; font: 400 12px var(--mono); text-align: right; overflow-wrap: anywhere; }
-.help-list { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--dim); font-size: 13.5px; }
-.help-drivers { margin: 0; color: var(--dim); font-size: 13.5px; }
+.facts dd { margin: 0; font: 400 12px/20px var(--mono); text-align: right; overflow-wrap: anywhere; }
+.help-list { margin: 0; padding-left: 16px; display: grid; gap: 4px; color: var(--dim); }
+.help-drivers { margin: 0; color: var(--dim); }
 
 @media (max-width: 880px) {
   .stage { position: static; }

@@ -15,6 +15,7 @@ import { renderPageText } from "./page-text.js";
 import { state } from "./state.js";
 import { toggleTheme } from "./theme.js";
 import { renderTopbar } from "./topbar.js";
+import { showStars } from "./stars.js";
 import { readUrl, writeUrl } from "./url.js";
 
 const $ = (id) => document.getElementById(id);
@@ -65,7 +66,7 @@ function wire() {
     });
   });
   $("theme").addEventListener("click", () => { toggleTheme(); renderTopbar(); });
-  $("gh").innerHTML = ICON.github;
+  $("gh-ic").innerHTML = ICON.github;
   $("drop-icon").innerHTML = ICON.upload;
   $("install").addEventListener("click", flow.install);
   document.querySelectorAll("[data-goto]").forEach((b) => {
@@ -93,6 +94,7 @@ function wire() {
 readUrl();
 wire();
 render();
+showStars($("gh"), state.lang);
 loadRelease().then((rel) => {
   state.release = rel;
   render();
