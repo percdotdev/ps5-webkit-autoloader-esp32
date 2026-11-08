@@ -1,0 +1,31 @@
+---
+description: Domain layout for the ESP32 portal, payload pack, and web flasher
+alwaysApply: true
+---
+
+# Architecture
+
+The tree is the product. Top-level names are domains, not languages.
+
+- `flasher/` — Chrome/Edge writer. Flat. One concern per file (state, log, serial write, copy, screens).
+- `host/installer/` — pages the PS5 browser loads from the board.
+- `host/packed/` — generated AppCache tree. Paths are the protocol. Do not rename or regroup them.
+- `pack/` — turn an itsPLK checkout into `host/packed` and a LittleFS image.
+- `firmware/` — SoftAP portal (ESP32 and ESP8266). Sketch entry names stay `esp32-arduino.ino` / `esp8266-arduino.ino`.
+- `vendor/` — third-party tools and payloads. Do not restyle them.
+
+## Rules
+
+- New code goes in the domain it changes, not in a shared junk drawer.
+- One responsibility per file. Split a file when a second concern shows up, not on a line count.
+- No `utils/`, `common/`, `misc/`, or `helpers/` unless the name says exactly what is inside.
+- Keep a directory flat. Do not add a subdirectory next to loose files in the same folder.
+- Prefer a direct function over a new abstraction. Do not introduce a base class, registry, or framework to share two call sites.
+- Co-locate code that ships together. The flasher does not import the packer. The portal does not import flasher UI.
+- Delete unused packers and scripts instead of leaving a compatibility path.
+
+## Do not "clean up"
+
+- `host/packed` URLs (`/cache.appcache`, `/app/<version>/`, `__complete__`). The PS5 cache and the installer ELF depend on them.
+- Partition offsets, merged-bin names, and the Arduino sketch copy step in the Makefile.
+- Upstream files staged from itsPLK (`offsets/`, `src/`, `payloads/`). They are inputs, not this repo's architecture.
