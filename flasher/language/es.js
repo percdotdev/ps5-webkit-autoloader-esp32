@@ -116,4 +116,5 @@ export const es = {
   cap_press_title: "Pulsa RST para arrancar",
   cap_press: "La placa no pudo reiniciarse sola. Pulsa RST, o desconéctala y vuelve a conectarla, y aparecerá ESP32_PORTAL.",
   install: "Instalar",
+  badVerify: "La comprobación tras escribir falló. Activa “Borrar la flash antes” en Más opciones e instala de nuevo",
 };

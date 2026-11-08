@@ -5,3 +5,4 @@
 [submodule "vendor/mklittlefs"]
 	path = vendor/mklittlefs
 	url = https://github.com/owendswang/mklittlefs.git
+	ignore = untracked
