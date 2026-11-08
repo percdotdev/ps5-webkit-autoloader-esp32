@@ -24,8 +24,9 @@ on:
       - .github/workflows/firmware.yml
   workflow_dispatch:
 
+# One queue per branch or PR, so a pull request build never cancels the main build.
 concurrency:
-  group: firmware
+  group: firmware-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
