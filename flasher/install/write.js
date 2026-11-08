@@ -1,4 +1,5 @@
 import { session } from "../device/session.js";
+import { md5Hex } from "./verify.js";
 
 // Writes a merged image at 0x0 through the open esptool-js session.
 export async function writeImage(data, { eraseAll, onProgress }) {
@@ -9,6 +10,7 @@ export async function writeImage(data, { eraseAll, onProgress }) {
     flashFreq: "keep",
     eraseAll,
     compress: false, // pako deflate of a 4 MB image throws "offset is out of bounds"
+    calculateMD5Hash: md5Hex,
     reportProgress(_i, written, total) {
       onProgress(written / total);
     },

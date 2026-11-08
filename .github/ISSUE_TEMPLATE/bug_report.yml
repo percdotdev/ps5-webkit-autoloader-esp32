@@ -1,0 +1,51 @@
+name: Flashing or board problem
+description: The web flasher, the ESP32 board or the ESP32_PORTAL Wi-Fi does not work as expected.
+labels: [bug]
+body:
+  - type: dropdown
+    id: board
+    attributes:
+      label: Board
+      options:
+        - ESP32-S2 Mini
+        - ESP32-S3 DevKitC
+        - ESP32-C3 Super Mini
+        - ESP32 PICO-KIT
+        - Other (say which below)
+    validations:
+      required: true
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Where it goes wrong
+      options:
+        - The board does not show up in the browser
+        - Writing the firmware fails
+        - Written, but ESP32_PORTAL never appears
+        - The PS5 joins ESP32_PORTAL but the User's Guide does not load
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: ps5
+    attributes:
+      label: PS5 system software
+      placeholder: e.g. 9.60
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: e.g. Chrome 131 on Windows 11
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Flasher log
+      description: In the flasher, open Install → Logs and press Copy, then paste it here.
+      render: text

@@ -25,6 +25,7 @@ function isAbort(err) {
 function errorText(err) {
   if (isAbort(err)) return t("noport");
   if (err?.name === "InvalidStateError" || err?.name === "NetworkError") return t("busyPort");
+  if (/md5/i.test(String(err?.message))) return t("badVerify");
   return t("fail");
 }
 

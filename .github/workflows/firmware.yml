@@ -159,23 +159,25 @@ jobs:
           set -euo pipefail
           mkdir -p release
           find bins -name '*.merged.bin' -exec cp -f {} release/ \;
+          (cd release && sha256sum *.merged.bin > SHA256SUMS)
+          cat release/SHA256SUMS
           PAYLOAD="$(tr -d '[:space:]' < common/payload-version.txt 2>/dev/null || echo unknown)"
           VER="${PAYLOAD%%(*}"
           VER="${VER:-unknown}"
           TITLE="itsPLK ${PAYLOAD}"
-          NOTES="itsPLK/ps5-webkit-autoloader ${PAYLOAD}. Firmware ${GITHUB_SHA::12}. Flash at 0x0. S2: esp32-arduino.s2.merged.bin."
+          NOTES="itsPLK/ps5-webkit-autoloader ${PAYLOAD}. Firmware ${GITHUB_SHA::12}. Flash at 0x0. S2: esp32-arduino.s2.merged.bin. Check a download with: sha256sum -c SHA256SUMS --ignore-missing"
           ls -lh release
           publish() {
             local tag="$1"
             if gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1; then
               gh release edit "$tag" --repo "${{ github.repository }}" --title "$TITLE" --notes "$NOTES"
-              gh release upload "$tag" --repo "${{ github.repository }}" --clobber release/*.merged.bin
+              gh release upload "$tag" --repo "${{ github.repository }}" --clobber release/*.merged.bin release/SHA256SUMS
             else
               gh release create "$tag" \
                 --repo "${{ github.repository }}" \
                 --title "$TITLE" \
                 --notes "$NOTES" \
-                release/*.merged.bin
+                release/*.merged.bin release/SHA256SUMS
             fi
           }
           publish "$VER"

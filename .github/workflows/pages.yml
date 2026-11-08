@@ -32,6 +32,16 @@ jobs:
       - name: Checkout site
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check flasher scripts
+        run: |
+          set -euo pipefail
+          find flasher -name '*.js' -not -path 'flasher/bin/*' -print0 | xargs -0 -n1 node --check
+
       - name: Fetch bins from latest release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

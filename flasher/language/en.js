@@ -116,4 +116,5 @@ export const en = {
   cap_press_title: "Press RST to start",
   cap_press: "The board could not restart itself. Press RST, or unplug it and plug it back in, and ESP32_PORTAL comes up.",
   install: "Install",
+  badVerify: "The check after writing failed. Turn on “Erase flash first” under More options and install again",
 };
