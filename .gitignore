@@ -17,3 +17,5 @@ __pycache__/
 /henloader/
 replace_autoloader_elf.py
 /.hallmark/
+/flasher/bin/channels.json
+/flasher/bin/pre/
