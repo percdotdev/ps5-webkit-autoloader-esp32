@@ -37,7 +37,7 @@ El flasher comprueba que el firmware escrito coincide con el archivo y después 
 
 Al reiniciarse puede desaparecer de Windows. Es normal. Estas imágenes apagan el USB nativo tras arrancar para que la PS5 no se pelee con el puerto serie.
 
-También puedes descargar una [release](https://github.com/percdotdev/ps5-webkit-autoloader-esp32/releases/latest) y grabar el `.merged.bin` que toque en la dirección `0x0` con esptool. La misma versión del payload actualiza la release `latest`. Una versión nueva del payload tiene su propia release. Cada release trae un archivo `SHA256SUMS`: `sha256sum -c SHA256SUMS --ignore-missing` comprueba tu descarga.
+También puedes descargar una [release](https://github.com/percdotdev/ps5-webkit-autoloader-esp32/releases/latest) y grabar el `.merged.bin` que toque en la dirección `0x0` con esptool. La misma versión del payload actualiza la release `latest`. Una versión nueva del payload tiene su propia release. Cuando itsPLK publica una pre-release, aquí sale una pre-release equivalente para probarla; `latest` y el flasher web siguen en la estable. Cada release trae un archivo `SHA256SUMS`: `sha256sum -c SHA256SUMS --ignore-missing` comprueba tu descarga.
 
 | Placa | Archivo | LED de la placa |
 | --- | --- | --- |

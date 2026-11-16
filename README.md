@@ -37,7 +37,7 @@ The flasher checks the written firmware against the file, then restarts the boar
 
 When the board restarts it may vanish from Windows. That is normal. These images turn off native USB after boot so the PS5 does not fight the serial port.
 
-You can also download a [release](https://github.com/percdotdev/ps5-webkit-autoloader-esp32/releases/latest) and write the matching `.merged.bin` at address `0x0` with esptool. The same payload version updates the `latest` release in place. A new payload version gets its own release. Each release has a `SHA256SUMS` file: `sha256sum -c SHA256SUMS --ignore-missing` checks your download.
+You can also download a [release](https://github.com/percdotdev/ps5-webkit-autoloader-esp32/releases/latest) and write the matching `.merged.bin` at address `0x0` with esptool. The same payload version updates the `latest` release in place. A new payload version gets its own release. When itsPLK ships a pre-release, it gets a matching pre-release here for testing; `latest` and the web flasher stay on the stable one. Each release has a `SHA256SUMS` file: `sha256sum -c SHA256SUMS --ignore-missing` checks your download.
 
 | Board | File | On-board LED |
 | --- | --- | --- |

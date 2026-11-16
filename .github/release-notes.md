@@ -1,8 +1,18 @@
+<!-- pre -->
+> [!WARNING]
+> **Test build.** This packs itsPLK's [{{VER}}](https://github.com/itsPLK/ps5-webkit-autoloader/releases/tag/v{{VER}}) pre-release, which may have bugs or unfinished changes. For the stable build, use the [latest release](https://github.com/{{REPO}}/releases/latest). Payload feedback goes to itsPLK's [discussions](https://github.com/itsPLK/ps5-webkit-autoloader/discussions).
+
+<!-- /pre -->
 ESP32 firmware that serves [itsPLK's WebKit Autoloader](https://github.com/itsPLK/ps5-webkit-autoloader) **{{VER}}** to the PS5 over its own Wi-Fi, `ESP32_PORTAL`.
 
 ## Flash it
 
+<!-- stable -->
 **Easiest:** open the [web flasher](https://percdotdev.github.io/ps5-webkit-autoloader-esp32/) in Chrome or Edge. Choose your board, plug it in holding **BOOT**, press Install. It writes this release, checks it and restarts the board into the portal.
+<!-- /stable -->
+<!-- pre -->
+**Easiest:** download the file for your board below, open the [web flasher](https://percdotdev.github.io/ps5-webkit-autoloader-esp32/) in Chrome or Edge, and drop it in **More options** at the Install step. The flasher's own Install button writes the stable release, not this one.
+<!-- /pre -->
 
 **By hand** with [esptool](https://docs.espressif.com/projects/esptool/): put the board in download mode, then write the file for your board at `0x0`.
 

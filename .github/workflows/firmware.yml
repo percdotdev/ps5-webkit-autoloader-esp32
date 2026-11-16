@@ -12,6 +12,7 @@ on:
       - install-deps.sh
       - .gitmodules
       - .github/workflows/firmware.yml
+      - .github/release-notes.md
   pull_request:
     paths:
       - firmware/**
@@ -29,9 +30,25 @@ concurrency:
   group: firmware-${{ github.ref }}
   cancel-in-progress: true
 
+# Payload channels. Each one builds every board and gets its own GitHub release.
+#   stable: an itsPLK release. Publishes <version> and moves `latest`, which the web flasher installs.
+#   pre:    an itsPLK pre-release. Publishes <version> marked as a pre-release and leaves `latest` alone.
+# To follow upstream, change `ref` to the new itsPLK tag. When a pre-release goes
+# stable, move its tag to the stable entry and delete the pre entry here and in
+# the compile and release matrices.
 jobs:
   prepare:
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - channel: stable
+            ref: v0.7.1
+            build_type: stable
+          - channel: pre
+            ref: v0.8.0-pre-627ba8c
+            build_type: pre-release
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,7 +59,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: itsPLK/ps5-webkit-autoloader
-          ref: v0.7.1
+          ref: ${{ matrix.ref }}
           path: webkit-autoloader
           submodules: false
 
@@ -62,10 +79,14 @@ jobs:
         run: make -C vendor/mklittlefs
 
       - name: Record payload version
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
         run: |
-          base=$(grep -E '#define[[:space:]]+WKAL_VERSION' webkit-autoloader/include/wkali.h | awk '{print $3}' | tr -d '"\r')
+          set -euo pipefail
+          # "0.7.1" for stable, "0.8.0-pre-627ba8c" for a pre-release.
+          full=$(python3 webkit-autoloader/tools/gen_version.py --print)
           sha=$(git -C webkit-autoloader rev-parse --short HEAD)
-          echo "${base} (${sha})" | tee payload-version.txt
+          echo "${full} (${sha})" | tee payload-version.txt
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -74,8 +95,8 @@ jobs:
 
       - name: Pack payload
         env:
-          BUILD_TYPE: stable
-          WKAL_REF: v0.7.1
+          BUILD_TYPE: ${{ matrix.build_type }}
+          WKAL_REF: ${{ matrix.ref }}
         run: bash ./pack/pack_payload.sh
 
       - name: Build shared image
@@ -84,7 +105,7 @@ jobs:
       - name: Upload common
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-common
+          name: firmware-common-${{ matrix.channel }}
           path: |
             build/tls/server_certs.h
             build/dns-library
@@ -97,6 +118,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        channel: [stable, pre]
         board: [pico, s2, s3, c3]
     steps:
       - name: Checkout
@@ -122,7 +144,7 @@ jobs:
       - name: Download common
         uses: actions/download-artifact@v4
         with:
-          name: firmware-common
+          name: firmware-common-${{ matrix.channel }}
 
       - name: Compile ${{ matrix.board }}
         run: make ${{ matrix.board }} REUSE_FS=1
@@ -130,7 +152,7 @@ jobs:
       - name: Upload ${{ matrix.board }}
         uses: actions/upload-artifact@v4
         with:
-          name: bin-${{ matrix.board }}
+          name: bin-${{ matrix.channel }}-${{ matrix.board }}
           path: build/${{ matrix.board }}/esp32-arduino.${{ matrix.board }}.merged.bin
 
   release:
@@ -139,6 +161,11 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        channel: [stable, pre]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -146,50 +173,56 @@ jobs:
       - name: Download bins
         uses: actions/download-artifact@v4
         with:
-          pattern: bin-*
+          pattern: bin-${{ matrix.channel }}-*
           merge-multiple: true
           path: bins
 
       - name: Download payload version
         uses: actions/download-artifact@v4
         with:
-          name: firmware-common
+          name: firmware-common-${{ matrix.channel }}
           path: common
 
-      - name: Publish releases
+      - name: Publish release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANNEL: ${{ matrix.channel }}
+          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           mkdir -p release
           find bins -name '*.merged.bin' -exec cp -f {} release/ \;
           (cd release && sha256sum *.merged.bin > SHA256SUMS)
           cat release/SHA256SUMS
-          # payload-version.txt reads like "0.7.1 (f4fab6b)".
-          PAYLOAD="$(tr -d '[:space:]' < common/payload-version.txt 2>/dev/null || echo unknown)"
+          # payload-version.txt reads like "0.7.1 (f4fab6b)" or "0.8.0-pre-627ba8c (627ba8c)".
+          PAYLOAD="$(tr -d '[:space:]' < common/payload-version.txt)"
           VER="${PAYLOAD%%(*}"
-          VER="${VER:-unknown}"
           PSHA="$(sed -n 's/.*(\(.*\)).*/\1/p' <<< "$PAYLOAD")"
-          PSHA="${PSHA:-unknown}"
-          TITLE="itsPLK ${VER} (${PSHA})"
-          sed -e "s|{{VER}}|${VER}|g" -e "s|{{PSHA}}|${PSHA}|g" \
+          [ -n "$VER" ] && [ -n "$PSHA" ] || { echo "bad payload version: $PAYLOAD" >&2; exit 1; }
+          if [ "$CHANNEL" = pre ]; then
+            TITLE="itsPLK ${VER} (pre-release)"; DROP=stable; FLAGS=(--prerelease --latest=false)
+          else
+            TITLE="itsPLK ${VER} (${PSHA})"; DROP=pre; FLAGS=()
+          fi
+          # Keep the blocks for this channel, drop the other one, strip the markers.
+          sed -e "/<!-- ${DROP} -->/,/<!-- \/${DROP} -->/d" -e '/^<!-- \/\?\(stable\|pre\) -->$/d' \
+              -e "s|{{VER}}|${VER}|g" -e "s|{{PSHA}}|${PSHA}|g" \
               -e "s|{{SHA}}|${GITHUB_SHA}|g" -e "s|{{SHORT}}|${GITHUB_SHA::7}|g" \
-              -e "s|{{REPO}}|${{ github.repository }}|g" \
+              -e "s|{{REPO}}|${REPO}|g" \
               .github/release-notes.md > notes.md
           cat notes.md
           ls -lh release
           publish() {
-            local tag="$1"
-            if gh release view "$tag" --repo "${{ github.repository }}" >/dev/null 2>&1; then
-              gh release edit "$tag" --repo "${{ github.repository }}" --title "$TITLE" --notes-file notes.md
-              gh release upload "$tag" --repo "${{ github.repository }}" --clobber release/*.merged.bin release/SHA256SUMS
+            local tag="$1"; shift
+            if gh release view "$tag" --repo "$REPO" >/dev/null 2>&1; then
+              gh release edit "$tag" --repo "$REPO" --title "$TITLE" --notes-file notes.md "$@"
+              gh release upload "$tag" --repo "$REPO" --clobber release/*.merged.bin release/SHA256SUMS
             else
-              gh release create "$tag" \
-                --repo "${{ github.repository }}" \
-                --title "$TITLE" \
-                --notes-file notes.md \
+              gh release create "$tag" --repo "$REPO" --title "$TITLE" --notes-file notes.md "$@" \
                 release/*.merged.bin release/SHA256SUMS
             fi
           }
-          publish "$VER"
-          publish latest
+          publish "$VER" "${FLAGS[@]}"
+          if [ "$CHANNEL" = stable ]; then
+            publish latest --latest
+          fi
