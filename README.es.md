@@ -76,7 +76,7 @@ Solo Arduino-ESP32 **2.0.11**. Las imágenes quedan en `build/{pico,s2,s3,c3}/`.
 
 ## Créditos
 
-Basado en [owendswang/ps5-webkit-autoloader-esp32](https://github.com/owendswang/ps5-webkit-autoloader-esp32). Payload: [itsPLK](https://github.com/itsPLK/ps5-webkit-autoloader). Cadenas: [slopkit](https://github.com/jordyidk/slopkit), [Relapse](https://github.com/ntfargo/Relapse-Exploit). Flasher: [esptool-js](https://github.com/espressif/esptool-js).
+Payload: [itsPLK](https://github.com/itsPLK/ps5-webkit-autoloader). Cadenas: [slopkit](https://github.com/jordyidk/slopkit), [Relapse](https://github.com/ntfargo/Relapse-Exploit). Flasher: [esptool-js](https://github.com/espressif/esptool-js).
 
 ## Licencia
 
