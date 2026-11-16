@@ -100,6 +100,9 @@ def prepare_tree(web: Path) -> None:
          "third_party/ps5-elfldr",
          "third_party/ps5-unified-autoloader",
          "third_party/ps5-webkit-remote-loader"], cwd=web)
+    # 0.8.0 nests Wobkot inside the remote loader; older refs have nothing to fetch here.
+    run(["git", "submodule", "update", "--init", "--recursive"],
+        cwd=web / "third_party" / "ps5-webkit-remote-loader")
     for name in ("ps5-elfldr", "ps5-unified-autoloader"):
         run(["git", "fetch", "--tags", "--force", "--no-recurse-submodules"],
             cwd=web / "third_party" / name)

@@ -39,6 +39,8 @@ concurrency:
 jobs:
   prepare:
     runs-on: ubuntu-22.04
+    # A broken upstream pre-release must never block the stable release.
+    continue-on-error: ${{ matrix.channel == 'pre' }}
     strategy:
       fail-fast: false
       matrix:
@@ -115,6 +117,8 @@ jobs:
   compile:
     needs: prepare
     runs-on: ubuntu-22.04
+    # A broken upstream pre-release must never block the stable release.
+    continue-on-error: ${{ matrix.channel == 'pre' }}
     strategy:
       fail-fast: false
       matrix:
@@ -161,6 +165,8 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+    # A broken upstream pre-release must never block the stable release.
+    continue-on-error: ${{ matrix.channel == 'pre' }}
     strategy:
       fail-fast: false
       max-parallel: 1
