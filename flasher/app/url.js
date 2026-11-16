@@ -2,7 +2,7 @@ import { isBoard } from "../firmware/catalog.js";
 import { pickLang } from "../language/language.js";
 import { state } from "./state.js";
 
-// ?lang=es&board=s3 makes a link that opens on the right language and board.
+// ?lang=es&board=s3&channel=pre makes a link that opens on the right language and board.
 // The last board picked is also remembered for the next visit.
 export function readUrl() {
   const q = new URLSearchParams(location.search);
@@ -10,10 +10,12 @@ export function readUrl() {
   try { saved = localStorage.getItem("board"); } catch { /* storage blocked */ }
   state.lang = pickLang(q.get("lang"), navigator.language);
   state.board = [q.get("board"), saved].find(isBoard) || "s2";
+  state.channel = q.get("channel") === "pre" ? "pre" : "stable";
 }
 
 export function writeUrl() {
   const q = new URLSearchParams({ lang: state.lang, board: state.board });
+  if (state.channel === "pre") q.set("channel", "pre");
   history.replaceState(null, "", `?${q}`);
   try { localStorage.setItem("board", state.board); } catch { /* storage blocked */ }
 }

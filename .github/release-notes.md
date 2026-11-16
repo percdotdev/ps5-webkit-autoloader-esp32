@@ -42,3 +42,5 @@ Plug the board into the PS5, join `ESP32_PORTAL` (password `12345678`), then ope
 
 - Payload: itsPLK/ps5-webkit-autoloader {{VER}}, commit [`{{PSHA}}`](https://github.com/itsPLK/ps5-webkit-autoloader/commit/{{PSHA}})
 - Firmware: commit [`{{SHORT}}`](https://github.com/{{REPO}}/commit/{{SHA}})
+
+<!-- payload-ref: {{REF}}@{{PSHA7}} -->

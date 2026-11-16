@@ -10,5 +10,6 @@ export const state = {
   started: false, // the board rebooted into the new firmware on its own
   eraseAll: false,
   localFile: null, // { name, data }
-  release: undefined, // undefined while loading, null when unknown
+  channel: "stable", // stable | pre
+  channels: undefined, // { stable, pre } releases; undefined while loading, null when unknown
 };

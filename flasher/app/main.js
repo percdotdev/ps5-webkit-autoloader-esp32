@@ -4,7 +4,8 @@ import { renderPrepare } from "../device/prepare.js";
 import { renderSteps, goTo, advance } from "../steps/stepper.js";
 import { renderBoards, renderRelease } from "../firmware/picker.js";
 import { renderFileDrop, wireFileDrop } from "../firmware/file-drop.js";
-import { loadRelease } from "../firmware/release.js";
+import { renderChannel } from "../firmware/channel.js";
+import { loadChannels } from "../firmware/release.js";
 import { renderGuide } from "../guide/guide.js";
 import { renderInstall } from "../install/button.js";
 import { createFlow } from "../install/flow.js";
@@ -37,6 +38,12 @@ function pickBoard(id) {
   render();
 }
 
+function pickChannel(id) {
+  if (state.busy) return;
+  state.channel = id;
+  render();
+}
+
 function render() {
   writeUrl();
   renderPageText();
@@ -45,6 +52,7 @@ function render() {
   renderStage($("device"), deviceActions);
   renderPrepare($("prepare"));
   renderBoards($("boards"), pickBoard);
+  renderChannel($("channel"), pickChannel);
   renderRelease($("release"));
   renderInstall();
   renderFileDrop();
@@ -95,7 +103,8 @@ readUrl();
 wire();
 render();
 showStars($("gh"), state.lang);
-loadRelease().then((rel) => {
-  state.release = rel;
+loadChannels().then((channels) => {
+  state.channels = channels;
+  if (!channels?.pre) state.channel = "stable";
   render();
 });

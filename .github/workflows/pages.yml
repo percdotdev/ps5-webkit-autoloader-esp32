@@ -6,6 +6,7 @@ on:
     paths:
       - flasher/**
       - .github/workflows/pages.yml
+      - .github/scripts/fetch-flasher-bins.sh
   workflow_run:
     workflows: [firmware]
     types: [completed]
@@ -42,17 +43,11 @@ jobs:
           set -euo pipefail
           find flasher -name '*.js' -not -path 'flasher/bin/*' -print0 | xargs -0 -n1 node --check
 
-      - name: Fetch bins from latest release
+      - name: Fetch stable and pre-release bins
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          mkdir -p flasher/bin
-          gh release download latest \
-            --repo "${{ github.repository }}" \
-            --pattern '*.merged.bin' \
-            --dir flasher/bin
-          ls -lh flasher/bin
+          REPO: ${{ github.repository }}
+        run: bash .github/scripts/fetch-flasher-bins.sh
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

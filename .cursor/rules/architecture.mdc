@@ -10,7 +10,7 @@ The tree is the product. Top-level names are domains, not languages.
 - `flasher/` — Chrome/Edge writer, served by GitHub Pages. Only `index.html` sits at its root; everything else lives in one folder per feature:
   - `app/` — entry (`main.js`), page state, URL, theme, top bar, page-wide CSS.
   - `device/` — serial session (esptool-js), the stage that acts out each step, the download-mode instructions.
-  - `firmware/` — board catalog, latest release, picker, local `.bin` drop.
+  - `firmware/` — board catalog, stable/pre-release channels (`bin/channels.json`), version switch, picker, local `.bin` drop.
   - `install/` — install flow, flash write, progress meter, wake lock.
   - `log/` — log console and esptool line formatting.
   - `guide/` — PS5 setup steps.
@@ -19,10 +19,11 @@ The tree is the product. Top-level names are domains, not languages.
   - `share/` — Open Graph card (`og.html` source, `og.png`).
   - `boards/` — the drawn boards (one file per board, shared parts, scene animations in `boards.css`).
   - `steps/` — the four guided steps: which one is open, what is unlocked, the folded summaries.
-  - `bin/` — merged images, fetched by the pages workflow. Not in git.
+  - `bin/` — merged images (`bin/` stable, `bin/pre/` pre-release) and `channels.json`, fetched by the pages workflow. Not in git.
 - `host/installer/` — pages the PS5 browser loads from the board.
 - `host/packed/` — generated AppCache tree. Paths are the protocol. Do not rename or regroup them.
-- `pack/` — turn an itsPLK checkout into `host/packed` and a LittleFS image.
+- `pack/` — turn an itsPLK checkout into `host/packed` and a LittleFS image; `check_packed.sh` refuses a half-staged payload.
+- `.github/scripts/` — CI steps: pick itsPLK versions to build, fetch the flasher's bins, report failing builds as an issue.
 - `firmware/` — SoftAP portal (ESP32 and ESP8266). Sketch entry names stay `esp32-arduino.ino` / `esp8266-arduino.ino`.
 - `vendor/` — third-party tools and payloads. Do not restyle them.
 

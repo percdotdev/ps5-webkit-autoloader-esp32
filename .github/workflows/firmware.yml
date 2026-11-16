@@ -12,6 +12,7 @@ on:
       - install-deps.sh
       - .gitmodules
       - .github/workflows/firmware.yml
+      - .github/scripts/**
       - .github/release-notes.md
   pull_request:
     paths:
@@ -23,34 +24,52 @@ on:
       - install-deps.sh
       - .gitmodules
       - .github/workflows/firmware.yml
+      - .github/scripts/**
+  # Follow itsPLK on its own: every 6 hours, build whatever it published that we have not.
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
-# One queue per branch or PR, so a pull request build never cancels the main build.
+# One queue per branch or PR. Only PR builds cancel each other; on main a
+# scheduled check never cancels a release that is being built.
 concurrency:
   group: firmware-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-# Payload channels. Each one builds every board and gets its own GitHub release.
-#   stable: an itsPLK release. Publishes <version> and moves `latest`, which the web flasher installs.
-#   pre:    an itsPLK pre-release. Publishes <version> marked as a pre-release and leaves `latest` alone.
-# To follow upstream, change `ref` to the new itsPLK tag. When a pre-release goes
-# stable, move its tag to the stable entry and delete the pre entry here and in
-# the compile and release matrices.
+# Payload channels, picked by .github/scripts/resolve-payload.sh from itsPLK's releases:
+#   stable: itsPLK's latest release. Publishes <version> and refreshes `latest`.
+#   pre:    itsPLK's newest pre-release while it is newer than stable. Publishes
+#           <version> as a pre-release and leaves `latest` alone.
+# A failure never publishes anything, so users stay on the last good build.
+# A pre-release that fails to build never holds back stable.
 jobs:
-  prepare:
+  resolve:
     runs-on: ubuntu-22.04
-    # A broken upstream pre-release must never block the stable release.
+    outputs:
+      prepare: ${{ steps.pick.outputs.prepare }}
+      channels: ${{ steps.pick.outputs.channels }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pick payload versions
+        id: pick
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+        run: bash .github/scripts/resolve-payload.sh
+
+  prepare:
+    needs: resolve
+    if: needs.resolve.outputs.channels != '[]'
+    runs-on: ubuntu-22.04
     continue-on-error: ${{ matrix.channel == 'pre' }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - channel: stable
-            ref: v0.7.1
-            build_type: stable
-          - channel: pre
-            ref: v0.8.0-pre-627ba8c
-            build_type: pre-release
+        include: ${{ fromJSON(needs.resolve.outputs.prepare) }}
+    name: prepare (${{ matrix.channel }}, ${{ matrix.ref }})
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,8 +106,9 @@ jobs:
           set -euo pipefail
           # "0.7.1" for stable, "0.8.0-pre-627ba8c" for a pre-release.
           full=$(python3 webkit-autoloader/tools/gen_version.py --print)
-          sha=$(git -C webkit-autoloader rev-parse --short HEAD)
+          sha=$(git -C webkit-autoloader rev-parse HEAD | cut -c1-7)
           echo "${full} (${sha})" | tee payload-version.txt
+          echo "${{ matrix.ref }}@${sha}" | tee payload-ref.txt
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -100,6 +120,12 @@ jobs:
           BUILD_TYPE: ${{ matrix.build_type }}
           WKAL_REF: ${{ matrix.ref }}
         run: bash ./pack/pack_payload.sh
+
+      - name: Check packed payload
+        run: |
+          set -euo pipefail
+          ver="$(sed 's/ (.*//' payload-version.txt)"
+          bash ./pack/check_packed.sh "$ver" "${{ matrix.ref }}"
 
       - name: Build shared image
         run: make common
@@ -113,16 +139,17 @@ jobs:
             build/dns-library
             build/common/esp32-arduino.littlefs.bin
             payload-version.txt
+            payload-ref.txt
 
   compile:
-    needs: prepare
+    needs: [resolve, prepare]
+    if: needs.resolve.outputs.channels != '[]'
     runs-on: ubuntu-22.04
-    # A broken upstream pre-release must never block the stable release.
     continue-on-error: ${{ matrix.channel == 'pre' }}
     strategy:
       fail-fast: false
       matrix:
-        channel: [stable, pre]
+        channel: ${{ fromJSON(needs.resolve.outputs.channels) }}
         board: [pico, s2, s3, c3]
     steps:
       - name: Checkout
@@ -153,6 +180,15 @@ jobs:
       - name: Compile ${{ matrix.board }}
         run: make ${{ matrix.board }} REUSE_FS=1
 
+      - name: Check image
+        run: |
+          set -euo pipefail
+          bin=build/${{ matrix.board }}/esp32-arduino.${{ matrix.board }}.merged.bin
+          size=$(stat -c %s "$bin")
+          echo "$bin: $size bytes"
+          # Every board here has 4 MB of flash; the merged image must fit it.
+          [ "$size" -gt 1000000 ] && [ "$size" -le 4194304 ] || { echo "unexpected image size" >&2; exit 1; }
+
       - name: Upload ${{ matrix.board }}
         uses: actions/upload-artifact@v4
         with:
@@ -160,18 +196,17 @@ jobs:
           path: build/${{ matrix.board }}/esp32-arduino.${{ matrix.board }}.merged.bin
 
   release:
-    needs: [prepare, compile]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [resolve, compile]
+    if: needs.resolve.outputs.channels != '[]' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-22.04
+    continue-on-error: ${{ matrix.channel == 'pre' }}
     permissions:
       contents: write
-    # A broken upstream pre-release must never block the stable release.
-    continue-on-error: ${{ matrix.channel == 'pre' }}
     strategy:
       fail-fast: false
       max-parallel: 1
       matrix:
-        channel: [stable, pre]
+        channel: ${{ fromJSON(needs.resolve.outputs.channels) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -198,21 +233,28 @@ jobs:
           set -euo pipefail
           mkdir -p release
           find bins -name '*.merged.bin' -exec cp -f {} release/ \;
+          # All four boards or nothing: a release never ships with a missing image.
+          for b in pico s2 s3 c3; do
+            [ -s "release/esp32-arduino.$b.merged.bin" ] || { echo "missing $b image" >&2; exit 1; }
+          done
           (cd release && sha256sum *.merged.bin > SHA256SUMS)
           cat release/SHA256SUMS
           # payload-version.txt reads like "0.7.1 (f4fab6b)" or "0.8.0-pre-627ba8c (627ba8c)".
           PAYLOAD="$(tr -d '[:space:]' < common/payload-version.txt)"
           VER="${PAYLOAD%%(*}"
           PSHA="$(sed -n 's/.*(\(.*\)).*/\1/p' <<< "$PAYLOAD")"
-          [ -n "$VER" ] && [ -n "$PSHA" ] || { echo "bad payload version: $PAYLOAD" >&2; exit 1; }
+          REF="$(tr -d '[:space:]' < common/payload-ref.txt)"
+          REF_TAG="${REF%@*}"
+          [ -n "$VER" ] && [ -n "$PSHA" ] && [ -n "$REF_TAG" ] || { echo "bad payload version: $PAYLOAD $REF" >&2; exit 1; }
           if [ "$CHANNEL" = pre ]; then
             TITLE="itsPLK ${VER} (pre-release)"; DROP=stable; FLAGS=(--prerelease --latest=false)
           else
-            TITLE="itsPLK ${VER} (${PSHA})"; DROP=pre; FLAGS=()
+            TITLE="itsPLK ${VER} (${PSHA})"; DROP=pre; FLAGS=(--latest)
           fi
           # Keep the blocks for this channel, drop the other one, strip the markers.
           sed -e "/<!-- ${DROP} -->/,/<!-- \/${DROP} -->/d" -e '/^<!-- \/\?\(stable\|pre\) -->$/d' \
               -e "s|{{VER}}|${VER}|g" -e "s|{{PSHA}}|${PSHA}|g" \
+              -e "s|{{REF}}|${REF_TAG}|g" -e "s|{{PSHA7}}|${REF#*@}|g" \
               -e "s|{{SHA}}|${GITHUB_SHA}|g" -e "s|{{SHORT}}|${GITHUB_SHA::7}|g" \
               -e "s|{{REPO}}|${REPO}|g" \
               .github/release-notes.md > notes.md
@@ -229,6 +271,27 @@ jobs:
             fi
           }
           publish "$VER" "${FLAGS[@]}"
+          # `latest` is a stable download link; GitHub's own "Latest" badge stays on <version>.
           if [ "$CHANNEL" = stable ]; then
-            publish latest --latest
+            publish latest --latest=false
           fi
+
+  report:
+    needs: [resolve, prepare, compile, release]
+    if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-22.04
+    permissions:
+      issues: write
+      actions: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Open or close the build-failure issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          BUILT: ${{ needs.resolve.outputs.channels }}
+        run: bash .github/scripts/report-build.sh

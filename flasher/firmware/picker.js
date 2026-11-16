@@ -4,8 +4,8 @@ import { t } from "../language/language.js";
 import { el } from "../ui/dom.js";
 import { ICON } from "../ui/icons.js";
 import { boardThumb } from "../boards/art.js";
-import { BOARD_NAME, CHIP_OF, IMAGE_OF } from "./catalog.js";
-import { payloadLabel } from "./release.js";
+import { BOARD_NAME, CHIP_OF, IMAGE_OF, imagePath } from "./catalog.js";
+import { payloadLabel, selected } from "./release.js";
 
 // Once a chip answers, the choice is locked to what was detected.
 export function renderBoards(root, onPick) {
@@ -34,18 +34,18 @@ function fmtDate(iso) {
 }
 
 export function renderRelease(root) {
-  const rel = state.release;
+  const rel = selected();
   if (rel === undefined) {
     root.replaceChildren(el("span", { class: "muted" }, t("relLoading")));
     return;
   }
-  const file = IMAGE_OF[CHIP_OF[state.board]];
+  const chip = CHIP_OF[state.board];
   const head = rel
     ? el("span", {}, el("b", { translate: "no" }, rel.tag), rel.date && el("span", { class: "muted" }, ` · ${fmtDate(rel.date)}`))
     : el("b", {}, t("relLatest"));
   const sub = rel?.name && el("small", { class: "muted", translate: "no" }, `${t("relPayload")} ${payloadLabel(rel.name)}`);
   const download = el("a", {
-    class: "icon-btn", href: file, download: file.split("/").pop(),
+    class: "icon-btn", href: imagePath(chip, state.channel), download: IMAGE_OF[chip],
     title: t("download"), "aria-label": t("download"), html: ICON.download,
   });
   root.replaceChildren(el("div", { class: "release-tx" }, head, sub), download);

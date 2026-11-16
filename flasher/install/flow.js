@@ -1,6 +1,6 @@
 import { state } from "../app/state.js";
 import { session, openSession, dropSession } from "../device/session.js";
-import { IMAGE_OF, boardOf } from "../firmware/catalog.js";
+import { IMAGE_OF, boardOf, imagePath } from "../firmware/catalog.js";
 import { fetchImage } from "../firmware/image.js";
 import { t } from "../language/language.js";
 import { clearLog, logLine } from "../log/log.js";
@@ -67,10 +67,10 @@ export function createFlow(render) {
 
   async function write() {
     let data = state.localFile?.data;
-    const name = state.localFile?.name || IMAGE_OF[session.imageKey].split("/").pop();
+    const name = state.localFile?.name || IMAGE_OF[session.imageKey];
     if (!data) {
       showProgress(t("phFetch"), null);
-      data = await fetchImage(IMAGE_OF[session.imageKey]);
+      data = await fetchImage(imagePath(session.imageKey, state.channel));
     }
     logLine(`${name} · ${fmtBytes(data.byteLength)}`);
 
