@@ -25,9 +25,9 @@ on:
       - .gitmodules
       - .github/workflows/firmware.yml
       - .github/scripts/**
-  # Follow itsPLK on its own: every 6 hours, build whatever it published that we have not.
+  # Follow itsPLK on its own: every 15 minutes, build whatever it published that we have not.
   schedule:
-    - cron: "17 */6 * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 # One queue per branch or PR. Only PR builds cancel each other; on main a
