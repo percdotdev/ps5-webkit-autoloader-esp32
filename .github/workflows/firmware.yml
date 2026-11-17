@@ -278,10 +278,22 @@ jobs:
                 release/*.merged.bin release/SHA256SUMS
             fi
           }
+          new=true
+          gh release view "$VER" --repo "$REPO" >/dev/null 2>&1 && new=false
           publish "$VER" "${FLAGS[@]}"
           # `latest` is a stable download link; GitHub's own "Latest" badge stays on <version>.
           if [ "$CHANNEL" = stable ]; then
             publish latest --latest=false
+          fi
+          # Only the newest pre-release stays up. A new pre-release replaces the older
+          # ones; a new stable version replaces them all.
+          if [ "$CHANNEL" = pre ] || [ "$new" = true ]; then
+            gh api "repos/$REPO/releases?per_page=100" --jq '.[] | select(.prerelease) | .tag_name' |
+              while read -r old; do
+                [ "$old" = "$VER" ] && continue
+                echo "removing superseded pre-release $old"
+                gh release delete "$old" --repo "$REPO" --yes --cleanup-tag
+              done
           fi
 
   report:
