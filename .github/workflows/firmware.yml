@@ -29,6 +29,11 @@ on:
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild and republish even if nothing changed
+        type: boolean
+        default: false
 
 # One queue per branch or PR. Only PR builds cancel each other; on main a
 # scheduled check never cancels a release that is being built.
@@ -48,6 +53,7 @@ jobs:
     outputs:
       prepare: ${{ steps.pick.outputs.prepare }}
       channels: ${{ steps.pick.outputs.channels }}
+      fw: ${{ steps.pick.outputs.fw }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,6 +64,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           EVENT: ${{ github.event_name }}
+          FORCE: ${{ inputs.force || false }}
         run: bash .github/scripts/resolve-payload.sh
 
   prepare:
@@ -229,6 +236,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANNEL: ${{ matrix.channel }}
           REPO: ${{ github.repository }}
+          FW: ${{ needs.resolve.outputs.fw }}
         run: |
           set -euo pipefail
           mkdir -p release
@@ -254,7 +262,7 @@ jobs:
           # Keep the blocks for this channel, drop the other one, strip the markers.
           sed -e "/<!-- ${DROP} -->/,/<!-- \/${DROP} -->/d" -e '/^<!-- \/\?\(stable\|pre\) -->$/d' \
               -e "s|{{VER}}|${VER}|g" -e "s|{{PSHA}}|${PSHA}|g" \
-              -e "s|{{REF}}|${REF_TAG}|g" -e "s|{{PSHA7}}|${REF#*@}|g" \
+              -e "s|{{REF}}|${REF_TAG}|g" -e "s|{{PSHA7}}|${REF#*@}|g" -e "s|{{FW}}|${FW}|g" \
               -e "s|{{SHA}}|${GITHUB_SHA}|g" -e "s|{{SHORT}}|${GITHUB_SHA::7}|g" \
               -e "s|{{REPO}}|${REPO}|g" \
               .github/release-notes.md > notes.md

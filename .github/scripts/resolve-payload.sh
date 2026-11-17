@@ -2,14 +2,20 @@
 # Finds what itsPLK has published and decides which channels to build.
 #   stable: itsPLK's latest release.
 #   pre:    itsPLK's newest pre-release, only while it is newer than stable.
-# On the daily schedule a channel is skipped when our release already carries that
-# exact payload (the notes hold a `payload-ref: <tag>@<sha>` marker). Pushes and
-# manual runs always build.
-# Writes `prepare` (matrix entries) and `channels` (names) to $GITHUB_OUTPUT.
+# A channel is skipped when our release was already built from the same payload and
+# the same firmware source. The release notes carry the marker
+# `payload-ref: <tag>@<sha> fw:<source hash>`. Pull requests and manual runs with
+# force=true always build.
+# Writes `prepare` (matrix entries), `channels` (names) and `fw` to $GITHUB_OUTPUT.
 set -euo pipefail
 
 UP=itsPLK/ps5-webkit-autoloader
 : "${REPO:?}" "${EVENT:?}"
+
+# Everything that ends up in the image. CI-only files (workflows, scripts) are left
+# out on purpose, so tweaking the pipeline does not rebuild identical firmware.
+FW=$(git ls-tree HEAD -- firmware host pack vendor Makefile install-deps.sh .gitmodules .github/release-notes.md   | sha256sum | cut -c1-12)
+echo "firmware source: $FW"
 
 stable_tag=$(gh api "repos/$UP/releases/latest" --jq .tag_name)
 stable_date=$(gh api "repos/$UP/releases/latest" --jq .published_at)
@@ -42,9 +48,9 @@ entries=()
 names=()
 add() {
   local channel=$1 ref=$2 build_type=$3
-  local marker="payload-ref: ${ref}@$(short_sha "$ref")"
-  if [ "$EVENT" = schedule ] && published "$channel" "$marker"; then
-    echo "$channel: $ref already published, skipping"
+  local marker="payload-ref: ${ref}@$(short_sha "$ref") fw:${FW}"
+  if [ "$EVENT" != pull_request ] && [ "${FORCE:-false}" != true ] && published "$channel" "$marker"; then
+    echo "$channel: $ref with this firmware is already published, skipping"
     return
   fi
   echo "$channel: building $ref"
@@ -59,4 +65,5 @@ join() { local IFS=,; echo "[$*]"; }
 {
   echo "prepare=$(join "${entries[@]+"${entries[@]}"}")"
   echo "channels=$(join "${names[@]+"${names[@]}"}")"
+  echo "fw=$FW"
 } | tee -a "$GITHUB_OUTPUT"
