@@ -14,7 +14,9 @@ UP=itsPLK/ps5-webkit-autoloader
 
 # Everything that ends up in the image. CI-only files (workflows, scripts) are left
 # out on purpose, so tweaking the pipeline does not rebuild identical firmware.
-FW=$(git ls-tree HEAD -- firmware host pack vendor Makefile install-deps.sh .gitmodules .github/release-notes.md   | sha256sum | cut -c1-12)
+# host/packed is left out too: CI repacks it from itsPLK every build and commits the
+# stable copy back, so including it would rebuild forever.
+FW=$(git ls-tree HEAD -- firmware host/installer pack vendor Makefile install-deps.sh .gitmodules .github/release-notes.md | sha256sum | cut -c1-12)
 echo "firmware source: $FW"
 
 stable_tag=$(gh api "repos/$UP/releases/latest" --jq .tag_name)

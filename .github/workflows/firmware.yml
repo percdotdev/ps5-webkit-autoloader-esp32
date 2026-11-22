@@ -134,6 +134,13 @@ jobs:
           ver="$(sed 's/ (.*//' payload-version.txt)"
           bash ./pack/check_packed.sh "$ver" "${{ matrix.ref }}"
 
+      - name: Upload packed payload
+        if: matrix.channel == 'stable'
+        uses: actions/upload-artifact@v4
+        with:
+          name: packed-stable
+          path: host/packed
+
       - name: Build shared image
         run: make common
 
@@ -296,8 +303,46 @@ jobs:
               done
           fi
 
+  # Keeps host/packed in the repo on the stable payload, so the source matches the
+  # Latest release. Pushes made with GITHUB_TOKEN start no workflows, so no loop.
+  sync:
+    needs: [resolve, release]
+    if: contains(needs.resolve.outputs.channels, 'stable') && needs.release.result == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Download packed payload
+        uses: actions/download-artifact@v4
+        with:
+          name: packed-stable
+          path: packed-new
+
+      - name: Commit host/packed
+        run: |
+          set -euo pipefail
+          old=$(cat host/packed/app/*/__complete__ 2>/dev/null || true)
+          new=$(cat packed-new/app/*/__complete__)
+          # Same version means only build timestamps changed: not worth a commit.
+          if [ "$old" = "$new" ]; then echo "host/packed already on $new"; exit 0; fi
+          rm -rf host/packed && mv packed-new host/packed
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A host/packed
+          git commit -m "chore: serve itsPLK $new"
+          for i in 1 2 3; do
+            git push origin HEAD:main && exit 0
+            git pull --rebase origin main
+          done
+          exit 1
+
   report:
-    needs: [resolve, prepare, compile, release]
+    needs: [resolve, prepare, compile, release, sync]
     if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-22.04
     permissions:

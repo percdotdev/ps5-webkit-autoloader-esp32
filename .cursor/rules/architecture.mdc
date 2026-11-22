@@ -21,7 +21,7 @@ The tree is the product. Top-level names are domains, not languages.
   - `steps/` — the four guided steps: which one is open, what is unlocked, the folded summaries.
   - `bin/` — merged images (`bin/` stable, `bin/pre/` pre-release) and `channels.json`, fetched by the pages workflow. Not in git.
 - `host/installer/` — pages the PS5 browser loads from the board.
-- `host/packed/` — generated AppCache tree. Paths are the protocol. Do not rename or regroup them.
+- `host/packed/` — generated AppCache tree. CI commits the stable copy back after each new stable release; do not edit it by hand. Paths are the protocol. Do not rename or regroup them.
 - `pack/` — turn an itsPLK checkout into `host/packed` and a LittleFS image; `check_packed.sh` refuses a half-staged payload.
 - `.github/scripts/` — CI steps: pick itsPLK versions to build, fetch the flasher's bins, report failing builds as an issue.
 - `firmware/` — SoftAP portal (ESP32 and ESP8266). Sketch entry names stay `esp32-arduino.ino` / `esp8266-arduino.ino`.
