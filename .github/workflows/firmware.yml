@@ -26,8 +26,9 @@ on:
       - .github/workflows/firmware.yml
       - .github/scripts/**
   # Follow itsPLK on its own: every 15 minutes, build whatever it published that we have not.
+  # Off the quarter hour, when GitHub drops or delays fewer scheduled runs.
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
     inputs:
       force:
@@ -50,6 +51,7 @@ concurrency:
 jobs:
   resolve:
     runs-on: ubuntu-22.04
+    timeout-minutes: 1
     outputs:
       prepare: ${{ steps.pick.outputs.prepare }}
       channels: ${{ steps.pick.outputs.channels }}
@@ -71,6 +73,7 @@ jobs:
     needs: resolve
     if: needs.resolve.outputs.channels != '[]'
     runs-on: ubuntu-22.04
+    timeout-minutes: 4
     continue-on-error: ${{ matrix.channel == 'pre' }}
     strategy:
       fail-fast: false
@@ -160,6 +163,7 @@ jobs:
     needs: [resolve, prepare]
     if: needs.resolve.outputs.channels != '[]'
     runs-on: ubuntu-22.04
+    timeout-minutes: 3
     continue-on-error: ${{ matrix.channel == 'pre' }}
     strategy:
       fail-fast: false
@@ -215,6 +219,7 @@ jobs:
     needs: [resolve, compile]
     if: needs.resolve.outputs.channels != '[]' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-22.04
+    timeout-minutes: 3
     continue-on-error: ${{ matrix.channel == 'pre' }}
     permissions:
       contents: write
@@ -311,6 +316,7 @@ jobs:
     needs: [resolve, release]
     if: contains(needs.resolve.outputs.channels, 'stable') && needs.release.result == 'success' && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-22.04
+    timeout-minutes: 2
     permissions:
       contents: write
     steps:
@@ -347,6 +353,7 @@ jobs:
     needs: [resolve, prepare, compile, release, sync]
     if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-22.04
+    timeout-minutes: 2
     permissions:
       issues: write
       actions: read

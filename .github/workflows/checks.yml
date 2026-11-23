@@ -1,0 +1,35 @@
+name: checks
+
+# Fast checks that need no toolchain: workflows, shell scripts and the flasher's JS.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Every check runs even when an earlier one fails, so one run lists every problem.
+      - name: Workflows (actionlint)
+        if: always()
+        run: |
+          set -euo pipefail
+          bash <(curl -fsSL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7
+          ./actionlint -color
+
+      - name: Shell scripts (shellcheck)
+        if: always()
+        run: shellcheck install-deps.sh pack/*.sh .github/scripts/*.sh
+
+      - name: Flasher scripts (node --check)
+        if: always()
+        run: find flasher -name '*.js' -not -path 'flasher/bin/*' -print0 | xargs -0 -n1 node --check
