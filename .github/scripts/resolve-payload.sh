@@ -50,7 +50,9 @@ entries=()
 names=()
 add() {
   local channel=$1 ref=$2 build_type=$3
-  local marker="payload-ref: ${ref}@$(short_sha "$ref") fw:${FW}"
+  local sha marker
+  sha=$(short_sha "$ref")
+  marker="payload-ref: ${ref}@${sha} fw:${FW}"
   if [ "$EVENT" != pull_request ] && [ "${FORCE:-false}" != true ] && published "$channel" "$marker"; then
     echo "$channel: $ref with this firmware is already published, skipping"
     return

@@ -26,6 +26,7 @@ jobs:
   pages:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-22.04
+    timeout-minutes: 3
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
