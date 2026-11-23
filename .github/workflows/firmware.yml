@@ -73,24 +73,24 @@ jobs:
           FORCE: ${{ inputs.force || false }}
         run: bash .github/scripts/resolve-payload.sh
 
-  prepare:
+  # Runs itsPLK's code (gen_version.py, download_deps.sh, their Makefile), so this job
+  # touches no cache and keeps no credentials: only the packed files leave it, as data.
+  pack:
     needs: resolve
     if: needs.resolve.outputs.channels != '[]'
     runs-on: ubuntu-22.04
-    timeout-minutes: 4
+    timeout-minutes: 3
     continue-on-error: ${{ matrix.channel == 'pre' }}
     strategy:
       fail-fast: false
       matrix:
         include: ${{ fromJSON(needs.resolve.outputs.prepare) }}
-    name: prepare (${{ matrix.channel }}, ${{ matrix.ref }})
+    name: pack (${{ matrix.channel }}, ${{ matrix.ref }})
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      # Only mklittlefs is built from vendor/; the other submodule is never used.
-      - name: Checkout mklittlefs
-        run: git submodule update --init --recursive --depth 1 vendor/mklittlefs
+        with:
+          persist-credentials: false
 
       - name: Checkout itsPLK payload
         uses: actions/checkout@v4
@@ -99,6 +99,66 @@ jobs:
           ref: ${{ matrix.ref }}
           path: webkit-autoloader
           submodules: false
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Record payload version
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+          REF: ${{ matrix.ref }}
+        run: |
+          set -euo pipefail
+          # "0.7.1" for stable, "0.8.0-pre-627ba8c" for a pre-release.
+          full=$(python3 webkit-autoloader/tools/gen_version.py --print)
+          sha=$(git -C webkit-autoloader rev-parse HEAD | cut -c1-7)
+          echo "${full} (${sha})" | tee payload-version.txt
+          echo "${REF}@${sha}" | tee payload-ref.txt
+
+      - name: Pack payload
+        env:
+          BUILD_TYPE: ${{ matrix.build_type }}
+          WKAL_REF: ${{ matrix.ref }}
+        run: bash ./pack/pack_payload.sh
+
+      - name: Check packed payload
+        env:
+          REF: ${{ matrix.ref }}
+        run: |
+          set -euo pipefail
+          ver="$(sed 's/ (.*//' payload-version.txt)"
+          bash ./pack/check_packed.sh "$ver" "$REF"
+
+      - name: Upload packed payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: packed-${{ matrix.channel }}
+          path: |
+            host/packed
+            payload-version.txt
+            payload-ref.txt
+
+  # Our code only: builds the shared LittleFS image from the packed files.
+  prepare:
+    needs: [resolve, pack]
+    if: needs.resolve.outputs.channels != '[]'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 4
+    continue-on-error: ${{ matrix.channel == 'pre' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        channel: ${{ fromJSON(needs.resolve.outputs.channels) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Only mklittlefs is built from vendor/; the other submodule is never used.
+      - name: Checkout mklittlefs
+        run: git submodule update --init --recursive --depth 1 vendor/mklittlefs
 
       - name: Cache Arduino cores
         uses: actions/cache@v4
@@ -114,40 +174,14 @@ jobs:
       - name: Build mklittlefs
         run: make -C vendor/mklittlefs
 
-      - name: Record payload version
-        env:
-          BUILD_TYPE: ${{ matrix.build_type }}
-        run: |
-          set -euo pipefail
-          # "0.7.1" for stable, "0.8.0-pre-627ba8c" for a pre-release.
-          full=$(python3 webkit-autoloader/tools/gen_version.py --print)
-          sha=$(git -C webkit-autoloader rev-parse HEAD | cut -c1-7)
-          echo "${full} (${sha})" | tee payload-version.txt
-          echo "${{ matrix.ref }}@${sha}" | tee payload-ref.txt
+      # Replace the committed snapshot so no stale version ends up in the image.
+      - name: Clear committed payload
+        run: rm -rf host/packed
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Download packed payload
+        uses: actions/download-artifact@v4
         with:
-          node-version: 20
-
-      - name: Pack payload
-        env:
-          BUILD_TYPE: ${{ matrix.build_type }}
-          WKAL_REF: ${{ matrix.ref }}
-        run: bash ./pack/pack_payload.sh
-
-      - name: Check packed payload
-        run: |
-          set -euo pipefail
-          ver="$(sed 's/ (.*//' payload-version.txt)"
-          bash ./pack/check_packed.sh "$ver" "${{ matrix.ref }}"
-
-      - name: Upload packed payload
-        if: matrix.channel == 'stable'
-        uses: actions/upload-artifact@v4
-        with:
-          name: packed-stable
-          path: host/packed
+          name: packed-${{ matrix.channel }}
 
       - name: Build shared image
         run: make common
@@ -339,10 +373,10 @@ jobs:
         run: |
           set -euo pipefail
           old=$(cat host/packed/app/*/__complete__ 2>/dev/null || true)
-          new=$(cat packed-new/app/*/__complete__)
+          new=$(cat packed-new/host/packed/app/*/__complete__)
           # Same version means only build timestamps changed: not worth a commit.
           if [ "$old" = "$new" ]; then echo "host/packed already on $new"; exit 0; fi
-          rm -rf host/packed && mv packed-new host/packed
+          rm -rf host/packed && mv packed-new/host/packed host/packed
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A host/packed
@@ -354,7 +388,7 @@ jobs:
           exit 1
 
   report:
-    needs: [resolve, prepare, compile, release, sync]
+    needs: [resolve, pack, prepare, compile, release, sync]
     if: always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-22.04
     timeout-minutes: 2
