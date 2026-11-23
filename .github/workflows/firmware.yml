@@ -36,6 +36,10 @@ on:
         type: boolean
         default: false
 
+# Read-only by default; jobs that publish ask for more themselves.
+permissions:
+  contents: read
+
 # One queue per branch or PR. Only PR builds cancel each other; on main a
 # scheduled check never cancels a release that is being built.
 concurrency:
