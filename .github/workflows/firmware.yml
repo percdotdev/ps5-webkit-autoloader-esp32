@@ -80,8 +80,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      # Only mklittlefs is built from vendor/; the other submodule is never used.
+      - name: Checkout mklittlefs
+        run: git submodule update --init --recursive --depth 1 vendor/mklittlefs
 
       - name: Checkout itsPLK payload
         uses: actions/checkout@v4
@@ -96,12 +98,11 @@ jobs:
         with:
           path: |
             ~/.arduino15-esp32-2
-            ~/.arduino15/staging
             ~/.arduino15/arduino-cli-esp32-2.yaml
-          key: arduino-esp32-2.0.11-8266-3.1.2
+          key: arduino-esp32-2.0.11
 
       - name: Install dependencies
-        run: ./install-deps.sh
+        run: ESP8266=0 ./install-deps.sh
 
       - name: Build mklittlefs
         run: make -C vendor/mklittlefs
@@ -168,20 +169,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      # Only mklittlefs is built from vendor/; the other submodule is never used.
+      - name: Checkout mklittlefs
+        run: git submodule update --init --recursive --depth 1 vendor/mklittlefs
 
       - name: Cache Arduino cores
         uses: actions/cache@v4
         with:
           path: |
             ~/.arduino15-esp32-2
-            ~/.arduino15/staging
             ~/.arduino15/arduino-cli-esp32-2.yaml
-          key: arduino-esp32-2.0.11-8266-3.1.2
+          key: arduino-esp32-2.0.11
 
       - name: Install compile tools
-        run: COMPILE_ONLY=1 ./install-deps.sh
+        run: COMPILE_ONLY=1 ESP8266=0 ./install-deps.sh
 
       - name: Build mklittlefs
         run: make -C vendor/mklittlefs

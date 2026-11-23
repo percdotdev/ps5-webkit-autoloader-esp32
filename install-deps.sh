@@ -17,33 +17,28 @@ else
     SUDO="sudo"
 fi
 
-$SUDO apt-get update
-if [ "${COMPILE_ONLY:-0}" = 1 ]; then
-    $SUDO apt-get install -y \
-        ca-certificates \
-        curl \
-        git \
-        openssl \
-        python3 \
-        unzip \
-        xz-utils
-else
-    $SUDO apt-get install -y \
-        ca-certificates \
-        curl \
-        git \
-        jq \
-        nodejs \
-        npm \
-        openssl \
-        python3 \
-        unzip \
-        xz-utils
-    $SUDO npm install --global \
-        clean-css-cli \
-        html-minifier-terser \
-        svgo \
-        terser
+# Commands the build needs. CI runners already have them, so apt only runs when one is missing.
+NEED=(curl git openssl python3 unzip xz)
+PKGS=(ca-certificates curl git openssl python3 unzip xz-utils)
+if [ "${COMPILE_ONLY:-0}" != 1 ]; then
+    NEED+=(jq node npm)
+    PKGS+=(jq nodejs npm)
+fi
+for cmd in "${NEED[@]}"; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        $SUDO apt-get update
+        $SUDO apt-get install -y "${PKGS[@]}"
+        break
+    fi
+done
+
+if [ "${COMPILE_ONLY:-0}" != 1 ]; then
+    for cmd in cleancss html-minifier-terser svgo terser; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            $SUDO npm install --global clean-css-cli html-minifier-terser svgo terser
+            break
+        fi
+    done
 fi
 
 if ! command -v arduino-cli >/dev/null 2>&1; then
@@ -81,24 +76,20 @@ ARDUINO_CLI=(
     --config-file "$ARDUINO_CONFIG"
 )
 
-"${ARDUINO_CLI[@]}" core update-index
+# The index is only needed to install a core; skip the download when both are cached.
+# ESP8266=0 skips the ESP8266 core (CI never builds it).
+install_core() {
+    local core=$1 version=$2 installed
+    installed="$("${ARDUINO_CLI[@]}" core list | awk -v c="$core" '$1 == c {print $2}')"
+    if [ "$installed" != "$version" ]; then
+        "${ARDUINO_CLI[@]}" core update-index
+        "${ARDUINO_CLI[@]}" core install "$core@$version"
+    fi
+}
 
-INSTALLED_VERSION="$(
-    "${ARDUINO_CLI[@]}" core list |
-    awk '$1 == "esp32:esp32" {print $2}'
-)"
-
-if [ "$INSTALLED_VERSION" != "$CORE_VERSION" ]; then
-    "${ARDUINO_CLI[@]}" core install "esp32:esp32@$CORE_VERSION"
-fi
-
-INSTALLED_ESP8266_VERSION="$(
-    "${ARDUINO_CLI[@]}" core list |
-    awk '$1 == "esp8266:esp8266" {print $2}'
-)"
-
-if [ "$INSTALLED_ESP8266_VERSION" != "$ESP8266_CORE_VERSION" ]; then
-    "${ARDUINO_CLI[@]}" core install "esp8266:esp8266@$ESP8266_CORE_VERSION"
+install_core esp32:esp32 "$CORE_VERSION"
+if [ "${ESP8266:-1}" != 0 ]; then
+    install_core esp8266:esp8266 "$ESP8266_CORE_VERSION"
 fi
 
 echo
