@@ -160,16 +160,30 @@ jobs:
       - name: Checkout mklittlefs
         run: git submodule update --init --recursive --depth 1 vendor/mklittlefs
 
-      - name: Cache Arduino cores
-        uses: actions/cache@v4
+      # Release builds never restore the toolchain cache: anything on main can write to
+      # it, including itsPLK's code in `pack`. They install fresh and save the result;
+      # only PR builds, which publish nothing, restore it.
+      - name: Restore Arduino cores
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.arduino15-esp32-2
             ~/.arduino15/arduino-cli-esp32-2.yaml
-          key: arduino-esp32-2.0.11
+          key: arduino-esp32-2.0.11-v2
 
       - name: Install dependencies
         run: ESP8266=0 ./install-deps.sh
+
+      - name: Save Arduino cores
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.arduino15-esp32-2
+            ~/.arduino15/arduino-cli-esp32-2.yaml
+          key: arduino-esp32-2.0.11-v2
 
       - name: Build mklittlefs
         run: make -C vendor/mklittlefs
@@ -216,13 +230,17 @@ jobs:
       - name: Checkout mklittlefs
         run: git submodule update --init --recursive --depth 1 vendor/mklittlefs
 
-      - name: Cache Arduino cores
-        uses: actions/cache@v4
+      # Release builds never restore the toolchain cache: anything on main can write to
+      # it, including itsPLK's code in `pack`. They install fresh and save the result;
+      # only PR builds, which publish nothing, restore it.
+      - name: Restore Arduino cores
+        if: github.event_name == 'pull_request'
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.arduino15-esp32-2
             ~/.arduino15/arduino-cli-esp32-2.yaml
-          key: arduino-esp32-2.0.11
+          key: arduino-esp32-2.0.11-v2
 
       - name: Install compile tools
         run: COMPILE_ONLY=1 ESP8266=0 ./install-deps.sh
