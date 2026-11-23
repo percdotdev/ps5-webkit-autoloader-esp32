@@ -207,7 +207,7 @@ jobs:
           size=$(stat -c %s "$bin")
           echo "$bin: $size bytes"
           # Every board here has 4 MB of flash; the merged image must fit it.
-          [ "$size" -gt 1000000 ] && [ "$size" -le 4194304 ] || { echo "unexpected image size" >&2; exit 1; }
+          if [ "$size" -le 1000000 ] || [ "$size" -gt 4194304 ]; then echo "unexpected image size" >&2; exit 1; fi
 
       - name: Upload ${{ matrix.board }}
         uses: actions/upload-artifact@v4
@@ -259,7 +259,7 @@ jobs:
           for b in pico s2 s3 c3; do
             [ -s "release/esp32-arduino.$b.merged.bin" ] || { echo "missing $b image" >&2; exit 1; }
           done
-          (cd release && sha256sum *.merged.bin > SHA256SUMS)
+          (cd release && sha256sum -- *.merged.bin > SHA256SUMS)
           cat release/SHA256SUMS
           # payload-version.txt reads like "0.7.1 (f4fab6b)" or "0.8.0-pre-627ba8c (627ba8c)".
           PAYLOAD="$(tr -d '[:space:]' < common/payload-version.txt)"
@@ -267,7 +267,7 @@ jobs:
           PSHA="$(sed -n 's/.*(\(.*\)).*/\1/p' <<< "$PAYLOAD")"
           REF="$(tr -d '[:space:]' < common/payload-ref.txt)"
           REF_TAG="${REF%@*}"
-          [ -n "$VER" ] && [ -n "$PSHA" ] && [ -n "$REF_TAG" ] || { echo "bad payload version: $PAYLOAD $REF" >&2; exit 1; }
+          if [ -z "$VER" ] || [ -z "$PSHA" ] || [ -z "$REF_TAG" ]; then echo "bad payload version: $PAYLOAD $REF" >&2; exit 1; fi
           if [ "$CHANNEL" = pre ]; then
             TITLE="itsPLK ${VER} (pre-release)"; DROP=stable; FLAGS=(--prerelease --latest=false)
           else
@@ -343,7 +343,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A host/packed
           git commit -m "chore: serve itsPLK $new"
-          for i in 1 2 3; do
+          for _ in 1 2 3; do
             git push origin HEAD:main && exit 0
             git pull --rebase origin main
           done
