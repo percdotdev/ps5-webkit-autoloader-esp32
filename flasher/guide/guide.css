@@ -1,7 +1,0 @@
-/* PS5 setup steps. */
-.guide { display: grid; gap: 20px; }
-.g-step h3 { margin: 0 0 8px; font-size: 14px; font-weight: 500; }
-.g-step ol { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 8px; }
-.g-step li { counter-increment: s; display: grid; grid-template-columns: 20px 1fr; gap: 12px; color: var(--dim); }
-.g-step li::before { content: counter(s); font: 400 12px/20px var(--mono); color: var(--faint); text-align: right; }
-.g-note { margin: 0; padding: 12px; border-radius: var(--radius-sm); background: var(--panel-2); color: var(--dim); font-size: 13px; }

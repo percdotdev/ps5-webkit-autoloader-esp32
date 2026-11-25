@@ -2,22 +2,17 @@
 
 English · [Español](README.es.md)
 
-[![Web flasher: choose your board, plug it in, install](flasher/share/og.png)](https://percdotdev.github.io/ps5-webkit-autoloader-esp32/)
+[![Web flasher: plug the board in and press Install](flasher/share/og.png)](https://percdotdev.github.io/ps5-webkit-autoloader-esp32/)
 
 This turns a cheap ESP32 board into a Wi-Fi hotspot. You plug the board into the PS5, join that hotspot, and open the official **User’s Guide**. The guide loads a page from the board (not from the internet). That page installs [itsPLK/ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader). After that, **Media → WebKit Autoloader** starts Payload Manager.
 
 Use it on a console you own. Homebrew and WebKit exploits can violate Sony’s terms. The console or the PSN account can be banned if that console goes online. This project does not hide you from Sony.
 
-| Exploit | PS5 system software |
-| --- | --- |
-| poops | 7.00–12.00 |
-| relapse | 7.00–13.60 except 9.05 |
-
-The page picks the exploit. On this board’s Wi-Fi it uses Relapse, except on 9.05, which can only run Poops. Poops is the fallback when the console has no network interface and the firmware is 12.00 or older.
+Which PS5 system software versions work, and which exploit runs on each, is up to the payload. See [itsPLK’s README](https://github.com/itsPLK/ps5-webkit-autoloader#readme).
 
 ## What you need
 
-- A PS5 on one of the versions above
+- A PS5 on a version the payload supports ([list](https://github.com/itsPLK/ps5-webkit-autoloader#readme))
 - An ESP32 board with a USB port: **ESP32-S2 Mini** (TENSTAR and similar), ESP32-S3, ESP32-C3, ESP32 DevKit (WROOM-32 / ESP-32S, the common 30- or 38-pin board), or ESP32-PICO
 - A USB cable that carries data, not charge-only
 - Chrome or Edge on a PC to write the firmware (Firefox and Safari cannot)
@@ -29,9 +24,10 @@ The board ships empty. You write our image onto it from a PC. After that you mov
 ### Web flasher
 
 1. Open the [web flasher](https://percdotdev.github.io/ps5-webkit-autoloader-esp32/) in Chrome or Edge.
-2. **Choose your board.** The drawings match the real boards. The name is printed on the board or in the shop listing. A TENSTAR ESP32-S2 Mini is **ESP32-S2 Mini**.
-3. **Plug it in.** Hold the **BOOT** button, plug the board into the PC, let go after two seconds. That is download mode. Without it the chip ignores the write.
-4. **Install.** Chrome asks which device to use: pick the ESP32 (a COM port, or “USB JTAG/serial debug unit”). Leave the tab open while it writes.
+2. Plug the board into the PC and press **Install**. Chrome asks which device to use: pick the ESP32 (a COM port, or “USB JTAG/serial debug unit”). The flasher detects the board and writes the right image. Leave the tab open while it writes.
+3. Follow the next screens: they walk you through the PS5 part.
+
+If the board does not show up, try another cable, or hold **BOOT** while plugging it in. Version, board, a clean erase, your own `.bin` and the log are under **Advanced** at the bottom of the page.
 
 The flasher checks the written firmware against the file, then restarts the board straight into the portal, so there is no need to replug it. If the board cannot restart itself, the page says so: press **RST** or replug it.
 
@@ -58,8 +54,6 @@ The LED stays on while the board boots, then does a short blink every couple of 
 5. Reboot the PS5. Open **Media → WebKit Autoloader**. Payload Manager starts when you have no `autoload.txt`.
 
 Next time you only need the board plugged in, Wi-Fi still on `ESP32_PORTAL`, then **Media → WebKit Autoloader**.
-
-Relapse needs the IP the board hands out (the PS5 must stay on `ESP32_PORTAL`). Poops does not need a network interface.
 
 ## Build from source
 

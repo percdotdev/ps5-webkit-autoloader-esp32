@@ -34,10 +34,7 @@ sha256sum -c SHA256SUMS --ignore-missing
 
 Plug the board into the PS5, join `ESP32_PORTAL` (password `12345678`), then open **Settings → Guide and Tips → User’s Guide**. Full steps are in the [README](https://github.com/{{REPO}}#use-it-on-the-ps5).
 
-| Exploit | PS5 system software |
-| --- | --- |
-| poops | 7.00–12.00 |
-| Relapse | 7.00–13.60 except 9.05 |
+Supported PS5 versions are listed in [itsPLK’s README](https://github.com/itsPLK/ps5-webkit-autoloader#readme).
 
 ## Inside
 

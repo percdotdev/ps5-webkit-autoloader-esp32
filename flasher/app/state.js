@@ -1,11 +1,12 @@
 // What the page is doing right now. Serial objects live in device/session.js.
-// phase: idle | connecting | connected | installing | done | error
+// view:  plug | install | move | wifi | guide (the screen shown, see wizard/steps.js)
+// phase: idle | connecting | installing | done | error (the serial link)
 export const state = {
   lang: "en",
-  board: "s2",
+  view: "plug",
+  board: "s2",    // drawn before connecting; replaced by what the chip says it is
   phase: "idle",
-  step: 0,     // open step: 0 board, 1 plug in, 2 install, 3 PS5
-  reached: 0,  // furthest step unlocked
+  error: "",      // what went wrong, in words, while phase is "error"
   busy: false,
   started: false, // the board rebooted into the new firmware on its own
   eraseAll: false,

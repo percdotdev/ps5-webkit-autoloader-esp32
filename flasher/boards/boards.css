@@ -1,4 +1,4 @@
-/* Board drawings and the scene animations driven by the stage's data-scene. */
+/* Board drawings and the scene animations driven by the wizard's data-scene. */
 .art { display: block; flex: none; width: auto; height: 100%; max-width: 100%; overflow: visible; }
 .art-shadow { fill: black; opacity: 0.35; }
 :root[data-theme="light"] .art-shadow { opacity: 0.1; }
@@ -15,15 +15,15 @@
 
 /* BOOT hint: a ring that pulses over the button while you hold it. */
 .boot-ring { fill: none; stroke: var(--accent); stroke-width: 0.6; opacity: 0; transform-box: fill-box; transform-origin: center; }
-[data-scene="prepare"] .boot-ring { animation: ring 1.6s ease-out infinite; }
+[data-scene="prepare"] .boot-ring, [data-scene="error"] .boot-ring { animation: ring 1.6s ease-out infinite; }
 
 /* Cable: hangs below, slides into the port once the board is plugged in. */
 .cable { transform: translateY(26px); opacity: 0; transition: transform 500ms var(--ease), opacity 300ms var(--ease); }
-[data-scene="prepare"] .cable, [data-scene="plugged"] .cable, [data-scene="connecting"] .cable,
+[data-scene="prepare"] .cable, [data-scene="plug"] .cable, [data-scene="plugged"] .cable, [data-scene="press"] .cable, [data-scene="connecting"] .cable,
 [data-scene="connected"] .cable, [data-scene="writing"] .cable, [data-scene="done"] .cable, [data-scene="error"] .cable {
   transform: none; opacity: 1;
 }
-[data-scene="prepare"] .cable { animation: plug 3.2s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+[data-scene="prepare"] .cable, [data-scene="plug"] .cable { animation: plug 3.2s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
 .flow { stroke: var(--accent); stroke-dasharray: 1.2 3.2; opacity: 0; }
 [data-scene="writing"] .flow { opacity: 1; animation: flow 0.6s linear infinite; }
 
@@ -36,7 +36,7 @@
 [data-scene="connected"] .sig-usb, [data-scene="connected"] .sig-link { opacity: 1; animation: run 2.4s linear infinite; animation-delay: var(--d); }
 [data-scene="writing"] .sig-usb, [data-scene="writing"] .sig-link { opacity: 1; animation: run 0.7s linear infinite; animation-delay: var(--d); }
 [data-scene="writing"] .sig-led, [data-scene="writing"] .sig-power { opacity: 1; animation: run 1.4s linear infinite; animation-delay: var(--d); }
-[data-scene="prepare"] .sig-boot { opacity: 1; animation: run 1.6s linear infinite; }
+[data-scene="prepare"] .sig-boot, [data-scene="error"] .sig-boot { opacity: 1; animation: run 1.6s linear infinite; }
 [data-scene="done"] .sig-power, [data-scene="portal"] .sig-power { opacity: 1; animation: run 2s linear infinite; }
 [data-scene="portal"] .sig-rf { opacity: 1; animation: run 1s linear infinite; animation-delay: var(--d); }
 [data-scene="portal"] .sig-io { opacity: 0.7; stroke: var(--ok); animation: run 3s linear infinite; animation-delay: var(--d); }
@@ -45,10 +45,8 @@
 /* Wi-Fi waves once the board lives on the PS5. */
 .wave { stroke: var(--ok); opacity: 0; }
 [data-scene="portal"] .wave { animation: wave 2s ease-out infinite; animation-delay: calc(var(--i) * 0.25s); }
-[data-scene="pick"] .art-board, [data-scene="portal"] .art-board { animation: board-in 400ms var(--ease) both, float 5s ease-in-out 0.5s infinite; }
 
 @keyframes board-in { from { opacity: 0; transform: translateY(6px); } }
-@keyframes float { 50% { transform: translateY(-1.6px); } }
 @keyframes ring { 0% { opacity: 0.9; transform: scale(0.7); } 100% { opacity: 0; transform: scale(1.6); } }
 @keyframes plug { 0%, 12% { transform: translateY(18px); opacity: 0.4; } 40%, 100% { transform: none; opacity: 1; } }
 @keyframes flow { to { stroke-dashoffset: 4.4; } }

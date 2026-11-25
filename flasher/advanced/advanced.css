@@ -1,0 +1,16 @@
+/* Advanced: a sheet from the right with everything a first-timer can ignore. */
+.sheet {
+  margin: 0 0 0 auto; padding: 0; height: 100dvh; max-height: none; width: min(440px, 100%);
+  border: 0; border-left: 1px solid var(--line); background: var(--panel); color: var(--fg);
+}
+.sheet[open] { display: grid; grid-template-rows: auto 1fr; animation: sheet-in 300ms var(--ease); }
+.sheet::backdrop { background: rgb(0 0 0 / 0.5); }
+@keyframes sheet-in { from { transform: translateX(24px); opacity: 0; } }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.sheet-head h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; }
+.sheet-body { overflow: auto; padding: 20px; display: grid; gap: 28px; align-content: start; }
+.adv-group { display: grid; gap: 8px; min-width: 0; }
+.adv-group h3 { margin: 0; font-size: 13px; line-height: 20px; font-weight: 500; color: var(--dim); }
+.adv-note { margin: 0; color: var(--faint); font-size: 13px; line-height: 20px; text-wrap: pretty; }
+.adv-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sheet .boards { grid-template-columns: minmax(0, 1fr); }

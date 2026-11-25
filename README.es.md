@@ -2,22 +2,17 @@
 
 [English](README.md) · Español
 
-[![Flasher web: elige tu placa, conéctala, instala](flasher/share/og.png)](https://percdotdev.github.io/ps5-webkit-autoloader-esp32/?lang=es)
+[![Flasher web: conecta la placa y pulsa Instalar](flasher/share/og.png)](https://percdotdev.github.io/ps5-webkit-autoloader-esp32/?lang=es)
 
 Esto convierte una placa ESP32 barata en un punto de acceso Wi-Fi. Conectas la placa a la PS5, te unes a esa red y abres la **Guía del usuario** oficial. La guía carga una página desde la placa (no desde internet). Esa página instala [itsPLK/ps5-webkit-autoloader](https://github.com/itsPLK/ps5-webkit-autoloader). Después, **Multimedia → WebKit Autoloader** abre Payload Manager.
 
 Úsalo en una consola tuya. El homebrew y los exploits de WebKit pueden incumplir los términos de Sony. La consola o la cuenta de PSN pueden ser baneadas si esa consola se conecta a internet. Este proyecto no te oculta de Sony.
 
-| Exploit | Software del sistema de la PS5 |
-| --- | --- |
-| poops | 7.00–12.00 |
-| relapse | 7.00–13.60 excepto 9.05 |
-
-La página elige el exploit. En el Wi-Fi de la placa usa Relapse, salvo en 9.05, que solo puede usar Poops. Poops es el plan B cuando la consola no tiene interfaz de red y el firmware es 12.00 o anterior.
+Qué versiones del software de la PS5 funcionan, y qué exploit se usa en cada una, depende del payload. Consulta el [README de itsPLK](https://github.com/itsPLK/ps5-webkit-autoloader#readme).
 
 ## Qué necesitas
 
-- Una PS5 en una de las versiones de arriba
+- Una PS5 en una versión que soporte el payload ([lista](https://github.com/itsPLK/ps5-webkit-autoloader#readme))
 - Una placa ESP32 con puerto USB: **ESP32-S2 Mini** (TENSTAR y similares), ESP32-S3, ESP32-C3, ESP32 DevKit (WROOM-32 / ESP-32S, la típica de 30 o 38 pines) o ESP32-PICO
 - Un cable USB de datos, no uno que solo carga
 - Chrome o Edge en un PC para grabar el firmware (Firefox y Safari no pueden)
@@ -29,9 +24,10 @@ La placa viene vacía. Le grabas nuestra imagen desde un PC. Después la pasas a
 ### Flasher web
 
 1. Abre el [flasher web](https://percdotdev.github.io/ps5-webkit-autoloader-esp32/?lang=es) en Chrome o Edge.
-2. **Elige tu placa.** Los dibujos coinciden con las placas reales. El nombre viene impreso en la placa o en el anuncio de la tienda. Una TENSTAR ESP32-S2 Mini es **ESP32-S2 Mini**.
-3. **Conéctala.** Mantén pulsado el botón **BOOT**, conecta la placa al PC y suéltalo tras dos segundos. Eso es el modo descarga. Sin él, el chip ignora la escritura.
-4. **Instala.** Chrome te pregunta qué dispositivo usar: elige el ESP32 (un puerto COM, o “USB JTAG/serial debug unit”). No cierres la pestaña mientras escribe.
+2. Conecta la placa al PC y pulsa **Instalar**. Chrome pregunta qué dispositivo usar: elige el ESP32 (un puerto COM, o “USB JTAG/serial debug unit”). El flasher detecta la placa y graba la imagen correcta. No cierres la pestaña mientras graba.
+3. Sigue las siguientes pantallas: te guían con la parte de la PS5.
+
+Si la placa no aparece, prueba otro cable o mantén **BOOT** al conectarla. La versión, la placa, el borrado completo, tu propio `.bin` y el registro están en **Avanzado**, abajo de la página.
 
 El flasher comprueba que el firmware escrito coincide con el archivo y después reinicia la placa directamente en el portal, así que no hace falta desconectarla. Si la placa no puede reiniciarse sola, la página te lo dice: pulsa **RST** o vuelve a conectarla.
 
@@ -59,7 +55,6 @@ El LED se queda encendido mientras la placa arranca y luego da un parpadeo corto
 
 Las siguientes veces solo necesitas la placa conectada, el Wi-Fi en `ESP32_PORTAL` y luego **Multimedia → WebKit Autoloader**.
 
-Relapse necesita la IP que da la placa (la PS5 tiene que seguir en `ESP32_PORTAL`). Poops no necesita interfaz de red.
 
 ## Compilar desde el código
 

@@ -27,7 +27,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='2' y='2' width='20' height='20' rx='6' fill='%23111114'/%3E%3Cpath d='M8 8.5h5.5a2.5 2.5 0 0 1 0 5H10V16' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Geist+Mono:wght@400&display=swap">
   <script>
     try {
       const t = localStorage.getItem("theme");
@@ -37,125 +37,89 @@
   <link rel="stylesheet" href="./app/base.css">
   <link rel="stylesheet" href="./app/layout.css">
   <link rel="stylesheet" href="./ui/controls.css">
-  <link rel="stylesheet" href="./device/device.css">
-  <link rel="stylesheet" href="./firmware/firmware.css">
-  <link rel="stylesheet" href="./install/install.css">
-  <link rel="stylesheet" href="./log/log.css">
-  <link rel="stylesheet" href="./guide/guide.css">
   <link rel="stylesheet" href="./boards/boards.css">
-  <link rel="stylesheet" href="./steps/steps.css">
+  <link rel="stylesheet" href="./wizard/wizard.css">
+  <link rel="stylesheet" href="./advanced/advanced.css">
+  <link rel="stylesheet" href="./firmware/firmware.css">
+  <link rel="stylesheet" href="./log/log.css">
 </head>
 <body>
   <a class="skip" href="#main" id="skip">Skip to content</a>
 
   <header class="top">
-    <div class="top-in">
-      <a class="brand" href="./">
-        <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6"/><path d="M8 8.5h5.5a2.5 2.5 0 0 1 0 5H10V16"/></svg>
-        <span>WebKit Autoloader</span>
-      </a>
-      <div class="pill" id="pill" role="status" aria-live="polite">
-        <i class="dot"></i><span id="pill-text">Not connected</span>
+    <a class="brand" href="./">
+      <svg class="mark" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="6"/><path d="M8 8.5h5.5a2.5 2.5 0 0 1 0 5H10V16"/></svg>
+      <span>WebKit Autoloader</span>
+    </a>
+    <div class="top-tools">
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-set-lang="es" aria-pressed="false">ES</button>
       </div>
-      <div class="top-tools">
-        <div class="seg" role="group" aria-label="Language">
-          <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
-          <button type="button" data-set-lang="es" aria-pressed="false">ES</button>
-        </div>
-        <button type="button" class="icon-btn" id="theme" aria-label="Toggle theme"></button>
-        <a class="gh" id="gh" href="https://github.com/percdotdev/ps5-webkit-autoloader-esp32" aria-label="GitHub"><span class="gh-ic" id="gh-ic"></span></a>
-      </div>
+      <button type="button" class="icon-btn" id="theme" aria-label="Toggle theme"></button>
+      <a class="gh" id="gh" href="https://github.com/percdotdev/ps5-webkit-autoloader-esp32" aria-label="GitHub"><span class="gh-ic" id="gh-ic"></span></a>
     </div>
   </header>
 
   <main id="main" tabindex="-1">
-    <div class="intro">
-      <h1 id="title"></h1>
-      <p id="lead"></p>
-    </div>
-
-    <div class="grid">
-      <section class="card stage" id="device" aria-labelledby="dev-title"></section>
-
-      <ol class="steps" id="steps">
-        <li class="card step" data-step="0">
-          <button type="button" class="step-head" data-goto="0">
-            <span class="step-n">1</span><span class="step-t" id="s0-title"></span><span class="step-sum" id="s0-sum"></span>
-          </button>
-          <div class="step-body">
-            <p class="step-lead" id="s0-lead"></p>
-            <div id="boards" class="boards" role="radiogroup" aria-labelledby="s0-title"></div>
-            <div class="step-nav"><button type="button" class="btn" id="s0-next"></button></div>
-          </div>
-        </li>
-
-        <li class="card step" data-step="1">
-          <button type="button" class="step-head" data-goto="1">
-            <span class="step-n">2</span><span class="step-t" id="s1-title"></span><span class="step-sum" id="s1-sum"></span>
-          </button>
-          <div class="step-body">
-            <p class="step-lead" id="s1-lead"></p>
-            <div id="prepare"></div>
-            <div class="step-nav"><button type="button" class="btn" id="s1-next"></button></div>
-          </div>
-        </li>
-
-        <li class="card step" data-step="2">
-          <button type="button" class="step-head" data-goto="2">
-            <span class="step-n">3</span><span class="step-t" id="s2-title"></span><span class="step-sum" id="s2-sum"></span>
-          </button>
-          <div class="step-body">
-            <div id="channel" class="channel" hidden></div>
-            <div id="release" class="release"></div>
-            <div class="action">
-              <button type="button" class="btn primary" id="install"></button>
-              <div class="meter" id="meter" hidden>
-                <div class="meter-row"><span id="phase"></span><span id="pct">0%</span></div>
-                <div class="bar"><i id="bar"></i></div>
-              </div>
-            </div>
-            <details class="more">
-              <summary id="more-title"></summary>
-              <label class="check">
-                <input type="checkbox" id="erase">
-                <span><b id="erase-label"></b><small id="erase-hint"></small></span>
-              </label>
-              <label class="drop" id="drop">
-                <input type="file" id="file" accept=".bin,application/octet-stream">
-                <span class="drop-ic" id="drop-icon" aria-hidden="true"></span>
-                <span class="drop-tx"><span class="drop-k" id="or-file"></span><b id="drop-title"></b><small id="drop-hint"></small></span>
-                <button type="button" class="btn ghost sm" id="file-clear" hidden></button>
-              </label>
-            </details>
-            <details class="more logs" id="logs-box">
-              <summary><span id="logs-title"></span>
-                <button type="button" class="btn ghost sm" id="copy-log"></button></summary>
-              <div class="log" id="log" role="log" aria-live="polite"></div>
-            </details>
-          </div>
-        </li>
-
-        <li class="card step" data-step="3" id="guide-box">
-          <button type="button" class="step-head" data-goto="3">
-            <span class="step-n">4</span><span class="step-t" id="guide-title"></span><span class="step-sum" id="s3-sum"></span>
-          </button>
-          <div class="step-body">
-            <div class="guide" id="guide"></div>
-            <div class="step-nav"><button type="button" class="btn ghost" id="s3-again"></button></div>
-          </div>
-        </li>
-      </ol>
-    </div>
+    <section class="wiz" id="wiz" aria-live="polite">
+      <div class="art-box" id="art"></div>
+      <ol class="leds" id="leds"></ol>
+      <h1 class="wiz-title" id="wiz-title"></h1>
+      <p class="wiz-body" id="wiz-body"></p>
+      <div class="meter" id="meter" hidden>
+        <div class="bar"><i id="bar"></i></div>
+        <div class="meter-row"><span id="phase"></span><span id="pct"></span></div>
+      </div>
+      <div class="wiz-actions" id="wiz-actions"></div>
+      <div class="wiz-extra" id="wiz-extra" hidden></div>
+    </section>
   </main>
 
   <footer class="foot">
     <span id="foot-note"></span>
     <nav>
+      <button type="button" class="foot-btn" id="open-adv"></button>
       <a id="foot-src" href="https://github.com/percdotdev/ps5-webkit-autoloader-esp32"></a>
-      <a id="foot-rel" href="https://github.com/percdotdev/ps5-webkit-autoloader-esp32/releases/latest"></a>
       <a href="https://github.com/itsPLK/ps5-webkit-autoloader">itsPLK</a>
     </nav>
   </footer>
+
+  <dialog class="sheet" id="adv" aria-labelledby="adv-title">
+    <div class="sheet-head">
+      <h2 id="adv-title"></h2>
+      <button type="button" class="icon-btn" id="close-adv"></button>
+    </div>
+    <div class="sheet-body">
+      <section class="adv-group" aria-labelledby="ver-title">
+        <h3 id="ver-title"></h3>
+        <div id="channel" class="channel" hidden></div>
+        <div id="release" class="release"></div>
+      </section>
+      <section class="adv-group" aria-labelledby="board-title">
+        <h3 id="board-title"></h3>
+        <p class="adv-note" id="board-hint"></p>
+        <div id="boards" class="boards" role="radiogroup" aria-labelledby="board-title"></div>
+      </section>
+      <section class="adv-group" aria-labelledby="write-title">
+        <h3 id="write-title"></h3>
+        <label class="check">
+          <input type="checkbox" id="erase">
+          <span><b id="erase-label"></b><small id="erase-hint"></small></span>
+        </label>
+        <label class="drop" id="drop">
+          <input type="file" id="file" accept=".bin,application/octet-stream">
+          <span class="drop-ic" id="drop-icon" aria-hidden="true"></span>
+          <span class="drop-tx"><b id="drop-title"></b><small id="drop-hint"></small></span>
+          <button type="button" class="btn ghost sm" id="file-clear" hidden></button>
+        </label>
+      </section>
+      <section class="adv-group" aria-labelledby="logs-title">
+        <div class="adv-row"><h3 id="logs-title"></h3><button type="button" class="btn ghost sm" id="copy-log"></button></div>
+        <div class="log" id="log" role="log"></div>
+      </section>
+    </div>
+  </dialog>
 
   <script type="module" src="./app/main.js"></script>
 </body>

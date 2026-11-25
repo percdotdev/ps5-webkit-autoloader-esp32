@@ -9,16 +9,16 @@ The tree is the product. Top-level names are domains, not languages.
 
 - `flasher/` — Chrome/Edge writer, served by GitHub Pages. Only `index.html` sits at its root; everything else lives in one folder per feature:
   - `app/` — entry (`main.js`), page state, URL, theme, top bar, page-wide CSS.
-  - `device/` — serial session (esptool-js), the stage that acts out each step, the download-mode instructions.
+  - `wizard/` — the one-step-at-a-time screens (`steps.js` says what each shows), the LED progress row.
+  - `advanced/` — the Advanced sheet (version, board, erase, own `.bin`, log).
+  - `device/` — serial session (esptool-js) and the board drawing on screen.
   - `firmware/` — board catalog, stable/pre-release channels (`bin/channels.json`), version switch, picker, local `.bin` drop.
-  - `install/` — install flow, flash write, progress meter, wake lock.
+  - `install/` — install flow, flash write, progress meter, wake lock, “board not showing up” help.
   - `log/` — log console and esptool line formatting.
-  - `guide/` — PS5 setup steps.
   - `language/` — `t()` plus one strings file per language.
   - `ui/` — shared DOM builder, icons, number formatting, button/toggle CSS.
   - `share/` — Open Graph card (`og.html` source, `og.png`).
   - `boards/` — the drawn boards (one file per board, shared parts, scene animations in `boards.css`).
-  - `steps/` — the four guided steps: which one is open, what is unlocked, the folded summaries.
   - `bin/` — merged images (`bin/` stable, `bin/pre/` pre-release) and `channels.json`, fetched by the pages workflow. Not in git.
 - `host/installer/` — pages the PS5 browser loads from the board.
 - `host/packed/` — generated AppCache tree. CI commits the stable copy back after each new stable release; do not edit it by hand. Paths are the protocol. Do not rename or regroup them.

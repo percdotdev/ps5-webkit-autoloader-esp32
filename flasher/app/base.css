@@ -1,45 +1,45 @@
 /* Tokens, reset, shared keyframes.
-   Graphite neutrals keep the chrome quiet; copper is the one accent, taken from the
-   traces on the boards; the board on the stage is the only rich colour on screen. */
+   A night workbench: ink neutrals keep the chrome quiet, copper from the board traces is
+   the one accent, and the board in the middle is the only rich colour on screen. */
 :root {
-  --deep: #0f0f10;
-  --bg: #141415;
-  --panel: #19191b;
-  --panel-2: #232325;
-  --line: rgb(237 237 237 / 0.08);
-  --line-2: rgb(237 237 237 / 0.14);
-  --fg: #ededed;
-  --dim: #a1a1a6;
-  --faint: #85858b;
+  --deep: #07080d;
+  --bg: #0b0d14;
+  --panel: #11141c;
+  --panel-2: #1a1e28;
+  --line: rgb(238 240 245 / 0.08);
+  --line-2: rgb(238 240 245 / 0.14);
+  --fg: #eef0f5;
+  --dim: #a3a9b8;
+  --faint: #7a8296;
   --accent: #e39a62;
-  --accent-fg: #141415;
-  --primary-bg: #ededed;
-  --primary-fg: #141415;
+  --accent-fg: #0b0d14;
+  --primary-bg: #eef0f5;
+  --primary-fg: #0b0d14;
   --ok: #4cc38a;
   --warn: #e8a33d;
   --bad: #e5484d;
   --led-blue: #5aa9ff;
   --ring: color-mix(in srgb, var(--accent) 60%, transparent);
-  --radius: 14px;
-  --radius-sm: 8px;
+  --radius: 16px;
+  --radius-sm: 10px;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Geist Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
   color-scheme: dark;
 }
 :root[data-theme="light"] {
-  --deep: #f4f4f5;
-  --bg: #fafafa;
+  --deep: #eceff4;
+  --bg: #f5f7fa;
   --panel: #ffffff;
-  --panel-2: #f4f4f5;
-  --line: rgb(23 23 23 / 0.08);
-  --line-2: rgb(23 23 23 / 0.14);
-  --fg: #171717;
-  --dim: #525252;
-  --faint: #737373;
+  --panel-2: #eceff4;
+  --line: rgb(17 24 39 / 0.08);
+  --line-2: rgb(17 24 39 / 0.14);
+  --fg: #111827;
+  --dim: #4b5565;
+  --faint: #6b7487;
   --accent: #a8571f;
   --accent-fg: #ffffff;
-  --primary-bg: #171717;
+  --primary-bg: #111827;
   --primary-fg: #ffffff;
   --ok: #16a34a;
   --warn: #b7791f;
@@ -49,10 +49,10 @@
 }
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
-    --deep: #f4f4f5; --bg: #fafafa; --panel: #ffffff; --panel-2: #f4f4f5;
-    --line: rgb(23 23 23 / 0.08); --line-2: rgb(23 23 23 / 0.14);
-    --fg: #171717; --dim: #525252; --faint: #737373;
-    --accent: #a8571f; --accent-fg: #ffffff; --primary-bg: #171717; --primary-fg: #ffffff;
+    --deep: #eceff4; --bg: #f5f7fa; --panel: #ffffff; --panel-2: #eceff4;
+    --line: rgb(17 24 39 / 0.08); --line-2: rgb(17 24 39 / 0.14);
+    --fg: #111827; --dim: #4b5565; --faint: #6b7487;
+    --accent: #a8571f; --accent-fg: #ffffff; --primary-bg: #111827; --primary-fg: #ffffff;
     --ok: #16a34a; --warn: #b7791f; --bad: #dc2626; --led-blue: #2f80ed;
     color-scheme: light;
   }
@@ -61,9 +61,9 @@
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+  margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
   background: var(--bg); color: var(--fg);
-  font: 400 14px/20px var(--sans);
+  font: 400 15px/22px var(--sans);
   -webkit-font-smoothing: antialiased;
 }
 a { color: inherit; }

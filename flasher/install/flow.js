@@ -8,7 +8,6 @@ import { fmtBytes } from "../ui/format.js";
 import { showProgress, endProgress, hideProgress } from "./progress.js";
 import { holdAwake, releaseAwake } from "./wake-lock.js";
 import { writeImage, startFirmware } from "./write.js";
-import { advance } from "../steps/stepper.js";
 
 // " · 40 s left", once there is enough data to guess.
 function timeLeft(started, f) {
@@ -29,10 +28,6 @@ function errorText(err) {
   return t("fail");
 }
 
-function openFold(id) {
-  document.getElementById(id).open = true;
-}
-
 // Connect, install, disconnect. `render` repaints the page after each phase change.
 export function createFlow(render) {
   async function attach() {
@@ -44,12 +39,18 @@ export function createFlow(render) {
     render();
   }
 
+  // Picking no port goes back to the first screen; anything else shows what to try.
   async function fail(err) {
     await dropSession();
-    state.phase = isAbort(err) ? "idle" : "error";
-    endProgress(errorText(err), "bad");
     logLine(String(err?.message || err), "bad");
-    if (!isAbort(err)) openFold("logs-box");
+    hideProgress();
+    if (isAbort(err)) {
+      state.phase = "idle";
+      state.view = "plug";
+      return;
+    }
+    state.phase = "error";
+    state.error = errorText(err);
   }
 
   async function run(task) {
@@ -92,6 +93,8 @@ export function createFlow(render) {
   });
 
   const install = () => run(async () => {
+    state.view = "install";
+    state.error = "";
     await holdAwake();
     try {
       if (!session.loader) {
@@ -107,7 +110,7 @@ export function createFlow(render) {
       logLine(done, "hi");
       endProgress(done, "ok");
       state.phase = "done";
-      advance();
+      state.view = "move";
       await dropSession();
     } finally {
       await releaseAwake();
@@ -122,6 +125,7 @@ export function createFlow(render) {
 
   function reset() {
     state.phase = "idle";
+    state.view = "plug";
     hideProgress();
     render();
   }
@@ -131,6 +135,7 @@ export function createFlow(render) {
     if (state.busy || port !== session.port) return;
     await dropSession();
     if (state.phase === "connected") state.phase = "idle";
+    if (state.view === "install" && state.phase !== "error") state.view = "plug";
     render();
   }
 

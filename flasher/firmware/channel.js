@@ -16,9 +16,10 @@ export function renderChannel(root, onPick) {
     disabled: state.busy,
     onclick: () => onPick(id),
   }, el("b", {}, label), el("small", { translate: "no" }, c[id].tag));
+  const warn = state.channel === "pre" ? [el("p", { class: "chan-warn" }, t("chWarn"))] : [];
   root.replaceChildren(
     el("div", { class: "chans", role: "radiogroup", "aria-label": t("chLabel") },
       option("stable", t("chStable")), option("pre", t("chPre"))),
-    state.channel === "pre" && el("p", { class: "chan-warn" }, t("chWarn")),
+    ...warn,
   );
 }
