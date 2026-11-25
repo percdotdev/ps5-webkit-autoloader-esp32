@@ -23,13 +23,12 @@ permissions:
   contents: read
 
 jobs:
-  pages:
+  # Build and deploy are separate jobs, like GitHub's own Pages template: deploying in the
+  # same job right after the upload can ask for the artifact before GitHub lists it.
+  build:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-22.04
     timeout-minutes: 3
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - name: Checkout site
         uses: actions/checkout@v4
@@ -55,6 +54,14 @@ jobs:
         with:
           path: flasher
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-22.04
+    timeout-minutes: 3
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - name: Deploy Pages
         id: deploy
         uses: actions/deploy-pages@v4
