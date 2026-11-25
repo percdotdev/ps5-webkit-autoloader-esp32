@@ -221,7 +221,7 @@ jobs:
       fail-fast: false
       matrix:
         channel: ${{ fromJSON(needs.resolve.outputs.channels) }}
-        board: [pico, s2, s3, c3]
+        board: [pico, devkit, s2, s3, c3]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -311,8 +311,8 @@ jobs:
           set -euo pipefail
           mkdir -p release
           find bins -name '*.merged.bin' -exec cp -f {} release/ \;
-          # All four boards or nothing: a release never ships with a missing image.
-          for b in pico s2 s3 c3; do
+          # Every board or nothing: a release never ships with a missing image.
+          for b in pico devkit s2 s3 c3; do
             [ -s "release/esp32-arduino.$b.merged.bin" ] || { echo "missing $b image" >&2; exit 1; }
           done
           (cd release && sha256sum -- *.merged.bin > SHA256SUMS)

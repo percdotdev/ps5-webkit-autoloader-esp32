@@ -3,6 +3,7 @@ import { renderStage } from "../device/stage.js";
 import { renderPrepare } from "../device/prepare.js";
 import { renderSteps, goTo, advance } from "../steps/stepper.js";
 import { renderBoards, renderRelease } from "../firmware/picker.js";
+import { CHIP_OF } from "../firmware/catalog.js";
 import { renderFileDrop, wireFileDrop } from "../firmware/file-drop.js";
 import { renderChannel } from "../firmware/channel.js";
 import { loadChannels } from "../firmware/release.js";
@@ -33,7 +34,7 @@ const deviceActions = {
 };
 
 function pickBoard(id) {
-  if (state.busy || session.chipName) return;
+  if (state.busy || (session.chip && CHIP_OF[id] !== session.chip)) return;
   state.board = id;
   render();
 }

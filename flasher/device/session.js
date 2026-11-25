@@ -1,6 +1,6 @@
 import { ESPLoader, Transport } from "https://unpkg.com/esptool-js@0.7.0/bundle.js";
 import { state } from "../app/state.js";
-import { CHIP_OF, IMAGE_OF } from "../firmware/catalog.js";
+import { CHIP_OF, isChip } from "../firmware/catalog.js";
 import { t } from "../language/language.js";
 import { logLine } from "../log/log.js";
 
@@ -16,7 +16,7 @@ export const session = {
   chipName: "",
   chipDesc: "",
   mac: "",
-  imageKey: "",
+  chip: "",
 };
 
 // Native USB boards reject DTR/RTS; that is not an error for us.
@@ -57,7 +57,7 @@ export async function dropSession() {
   try { await session.transport?.disconnect(); } catch { /* already gone */ }
   Object.assign(session, {
     port: null, transport: null, loader: null, nativeUsb: false,
-    chipName: "", chipDesc: "", mac: "", imageKey: "",
+    chipName: "", chipDesc: "", mac: "", chip: "",
   });
 }
 
@@ -91,6 +91,6 @@ export async function openSession() {
   }
   const name = session.loader.chip?.CHIP_NAME || chip || CHIP_OF[state.board];
   session.chipName = name;
-  session.imageKey = IMAGE_OF[name] ? name : CHIP_OF[state.board];
-  if (CHIP_OF[state.board] !== session.imageKey) logLine(t("mismatch"));
+  session.chip = isChip(name) ? name : CHIP_OF[state.board];
+  if (CHIP_OF[state.board] !== session.chip) logLine(t("mismatch"));
 }

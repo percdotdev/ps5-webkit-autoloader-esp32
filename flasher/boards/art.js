@@ -2,8 +2,9 @@ import { s2Mini } from "./s2-mini.js";
 import { s3DevKitC } from "./s3-devkitc.js";
 import { c3SuperMini } from "./c3-super-mini.js";
 import { picoKit } from "./pico-kit.js";
+import { devkit } from "./devkit.js";
 
-const BOARDS = { s2: s2Mini, s3: s3DevKitC, c3: c3SuperMini, pico: picoKit };
+const BOARDS = { s2: s2Mini, devkit, s3: s3DevKitC, c3: c3SuperMini, pico: picoKit };
 
 // USB plug and cable hanging below the port. Slides up into the port when plugged.
 function cable(b) {

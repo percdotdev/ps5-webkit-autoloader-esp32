@@ -21,6 +21,7 @@ ESP32 firmware that serves [itsPLK's WebKit Autoloader](https://github.com/itsPL
 | ESP32-S2 Mini | `esp32-arduino.s2.merged.bin` | `esptool.py --chip esp32s2 write_flash 0x0 esp32-arduino.s2.merged.bin` |
 | ESP32-S3 DevKitC | `esp32-arduino.s3.merged.bin` | `esptool.py --chip esp32s3 write_flash 0x0 esp32-arduino.s3.merged.bin` |
 | ESP32-C3 Super Mini | `esp32-arduino.c3.merged.bin` | `esptool.py --chip esp32c3 write_flash 0x0 esp32-arduino.c3.merged.bin` |
+| ESP32 DevKit (WROOM-32 / ESP-32S) | `esp32-arduino.devkit.merged.bin` | `esptool.py --chip esp32 write_flash 0x0 esp32-arduino.devkit.merged.bin` |
 | ESP32 PICO-KIT | `esp32-arduino.pico.merged.bin` | `esptool.py --chip esp32 write_flash 0x0 esp32-arduino.pico.merged.bin` |
 
 Check your download first:

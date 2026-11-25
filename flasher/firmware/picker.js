@@ -7,20 +7,20 @@ import { boardThumb } from "../boards/art.js";
 import { BOARD_NAME, CHIP_OF, IMAGE_OF, imagePath } from "./catalog.js";
 import { payloadLabel, selected } from "./release.js";
 
-// Once a chip answers, the choice is locked to what was detected.
+// Once a chip answers, only boards that carry it stay pickable.
 export function renderBoards(root, onPick) {
-  const locked = Boolean(session.chipName) || state.busy;
+  const fits = (id) => !state.busy && (!session.chip || CHIP_OF[id] === session.chip);
   root.replaceChildren(...Object.keys(CHIP_OF).map((id) => {
     const on = state.board === id;
     return el("button", {
       type: "button", class: "board", role: "radio",
       "aria-checked": String(on),
-      disabled: locked && !on,
+      disabled: !on && !fits(id),
       onclick: () => onPick(id),
     },
       el("span", { class: "board-thumb", html: boardThumb(id) }),
       el("b", { translate: "no" }, BOARD_NAME[id]),
-      el("small", { translate: "no" }, session.imageKey === CHIP_OF[id] ? t("detected") : CHIP_OF[id]),
+      el("small", { translate: "no" }, session.chip === CHIP_OF[id] ? t("detected") : CHIP_OF[id]),
     );
   }));
 }
@@ -39,13 +39,12 @@ export function renderRelease(root) {
     root.replaceChildren(el("span", { class: "muted" }, t("relLoading")));
     return;
   }
-  const chip = CHIP_OF[state.board];
   const head = rel
     ? el("span", {}, el("b", { translate: "no" }, rel.tag), rel.date && el("span", { class: "muted" }, ` · ${fmtDate(rel.date)}`))
     : el("b", {}, t("relLatest"));
   const sub = rel?.name && el("small", { class: "muted", translate: "no" }, `${t("relPayload")} ${payloadLabel(rel.name)}`);
   const download = el("a", {
-    class: "icon-btn", href: imagePath(chip, state.channel), download: IMAGE_OF[chip],
+    class: "icon-btn", href: imagePath(state.board, state.channel), download: IMAGE_OF[state.board],
     title: t("download"), "aria-label": t("download"), html: ICON.download,
   });
   root.replaceChildren(el("div", { class: "release-tx" }, head, sub), download);
