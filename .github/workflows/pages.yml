@@ -49,6 +49,18 @@ jobs:
           REPO: ${{ github.repository }}
         run: bash .github/scripts/fetch-flasher-bins.sh
 
+      # GitHub Pages lets browsers reuse files for 10 minutes. Stamping every local script
+      # and stylesheet URL with the commit makes a new deploy load as one fresh set,
+      # never old modules mixed with new ones.
+      - name: Stamp asset URLs with the commit
+        run: |
+          set -euo pipefail
+          v="${GITHUB_SHA::7}"
+          find flasher -name '*.js' -not -path 'flasher/bin/*' -print0 |
+            xargs -0 sed -i -E "s#(from \"\.{1,2}/[^\"?]+\.js)\"#\1?v=$v\"#g"
+          sed -i -E "s#(href=\"\./[^\"?]+\.css)\"#\1?v=$v\"#g; s#(src=\"\./[^\"?]+\.js)\"#\1?v=$v\"#g" flasher/index.html
+          grep -c "?v=$v" flasher/index.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

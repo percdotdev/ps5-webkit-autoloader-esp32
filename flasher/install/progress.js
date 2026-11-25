@@ -18,6 +18,7 @@ export function showProgress(label, pct) {
   meter.dataset.indeterminate = "false";
   $("bar").style.transform = `scaleX(${v / 100})`;
   $("pct").textContent = v + "%";
+  meter.setAttribute("aria-valuenow", String(v));
   document.title = `${v}% · ${BASE_TITLE}`;
 }
 

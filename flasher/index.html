@@ -67,9 +67,9 @@
       <ol class="leds" id="leds"></ol>
       <h1 class="wiz-title" id="wiz-title"></h1>
       <p class="wiz-body" id="wiz-body"></p>
-      <div class="meter" id="meter" hidden>
-        <div class="bar"><i id="bar"></i></div>
-        <div class="meter-row"><span id="phase"></span><span id="pct"></span></div>
+      <div class="meter" id="meter" role="progressbar" aria-labelledby="phase" hidden>
+        <i class="meter-fill" id="bar"></i>
+        <span class="meter-tx" id="phase"></span><span class="meter-pct" id="pct"></span>
       </div>
       <div class="wiz-actions" id="wiz-actions"></div>
       <div class="wiz-extra" id="wiz-extra" hidden></div>

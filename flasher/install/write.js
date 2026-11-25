@@ -9,7 +9,9 @@ export async function writeImage(data, { eraseAll, onProgress }) {
     flashMode: "keep",
     flashFreq: "keep",
     eraseAll,
-    compress: false, // pako deflate of a 4 MB image throws "offset is out of bounds"
+    // Deflate on the wire: the empty flash compresses to almost nothing, so a 4 MB image
+    // sends about 2.7 MB. The stub inflates it on the chip.
+    compress: true,
     calculateMD5Hash: md5Hex,
     reportProgress(_i, written, total) {
       onProgress(written / total);

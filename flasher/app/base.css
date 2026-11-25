@@ -79,7 +79,6 @@ code, kbd {
 .muted { color: var(--dim); }
 [hidden] { display: none !important; }
 @keyframes blink { 50% { opacity: 0.35; } }
-@keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(290%); } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }

@@ -44,18 +44,26 @@
 .wiz-extra ul { margin: 0; padding-left: 16px; display: grid; gap: 4px; }
 .wiz-extra p { margin: 0; }
 
-/* Progress: a copper trace filling up. */
-.meter { margin-top: 24px; width: min(320px, 100%); display: grid; gap: 8px; }
-.meter-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--dim); }
-#pct { font: 400 12px/20px var(--mono); font-variant-numeric: tabular-nums; }
-.bar { position: relative; height: 4px; border-radius: 2px; background: var(--panel-2); overflow: hidden; }
-.bar i {
-  position: absolute; inset: 0; border-radius: inherit; background: var(--accent);
-  transform: scaleX(0); transform-origin: left; transition: transform 300ms var(--ease);
+/* Progress: takes the button's place and fills up like one, copper from the left. */
+.meter {
+  position: relative; overflow: hidden; margin-top: 28px;
+  width: min(320px, 100%); height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px;
+  background: var(--panel); border: 1px solid var(--line-2);
 }
-.meter[data-indeterminate="true"] .bar i { transform: scaleX(0.35) !important; animation: slide 1.1s var(--ease) infinite; }
-.meter[data-tone="ok"] .bar i { background: var(--ok); }
-.meter[data-tone="bad"] .bar i { background: var(--bad); transform: scaleX(1) !important; }
+.meter-fill {
+  position: absolute; inset: 0; transform: scaleX(0); transform-origin: left;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-right: 2px solid var(--accent);
+  transition: transform 300ms var(--ease);
+}
+.meter-tx, .meter-pct { position: relative; font-size: 14px; }
+.meter-tx { color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meter-pct { color: var(--dim); font: 400 13px/1 var(--mono); font-variant-numeric: tabular-nums; }
+/* No percentage yet: a short band sweeps across instead. */
+.meter[data-indeterminate="true"] .meter-fill { right: auto; width: 30%; border-right: 0; animation: sweep 1.4s var(--ease) infinite; }
+@keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+.meter[data-tone="ok"] .meter-fill { background: color-mix(in srgb, var(--ok) 22%, transparent); border-color: var(--ok); }
 
 /* Each new step fades and rises a little. */
 .wiz[data-enter] .wiz-title, .wiz[data-enter] .wiz-body, .wiz[data-enter] .wiz-actions { animation: rise 400ms var(--ease) both; }
