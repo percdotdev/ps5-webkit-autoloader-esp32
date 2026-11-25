@@ -70,7 +70,10 @@ export async function openSession() {
   ignoreMissingSignals(session.transport);
   session.loader = new ESPLoader({
     transport: session.transport,
-    baudrate: 115200,
+    // USB-serial bridges (CP2102, CH340) start at 115200 and switch up once the stub runs:
+    // 460800 writes the 4 MB image about four times faster and every common bridge handles it.
+    // Native USB ignores the baud rate, so it stays put there.
+    baudrate: session.nativeUsb ? 115200 : 460800,
     romBaudrate: 115200,
     terminal: {
       clean() {},

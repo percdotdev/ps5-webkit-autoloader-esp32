@@ -9,12 +9,14 @@ import { showProgress, endProgress, hideProgress } from "./progress.js";
 import { holdAwake, releaseAwake } from "./wake-lock.js";
 import { writeImage, startFirmware } from "./write.js";
 
-// " · 40 s left", once there is enough data to guess.
+// "About 2 min left" or "About 40 s left", once there is enough data to guess.
 function timeLeft(started, f) {
   const spent = (Date.now() - started) / 1000;
-  if (f < 0.05 || spent < 2) return "";
+  if (f < 0.05 || spent < 3) return t("phWrite");
   const left = Math.max(1, Math.round((spent / f) * (1 - f)));
-  return ` · ${t("left").replace("{s}", left)}`;
+  return left >= 90
+    ? t("leftMin").replace("{n}", Math.round(left / 60))
+    : t("leftSec").replace("{n}", Math.max(5, Math.round(left / 5) * 5));
 }
 
 function isAbort(err) {
@@ -75,13 +77,13 @@ export function createFlow(render) {
     }
     logLine(`${name} · ${fmtBytes(data.byteLength)}`);
 
-    showProgress(state.eraseAll ? t("phErase") : `${t("phWrite")}…`, state.eraseAll ? null : 0);
+    showProgress(state.eraseAll ? t("phErase") : t("phWrite"), state.eraseAll ? null : 0);
     let started = 0;
     await writeImage(data, {
       eraseAll: state.eraseAll,
       onProgress: (f) => {
         started ||= Date.now();
-        showProgress(`${t("phWrite")}${timeLeft(started, f)}`, f * 100);
+        showProgress(timeLeft(started, f), f * 100);
       },
     });
   }
