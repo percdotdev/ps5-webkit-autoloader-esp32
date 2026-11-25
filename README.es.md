@@ -18,7 +18,7 @@ La página elige el exploit. En el Wi-Fi de la placa usa Relapse, salvo en 9.05,
 ## Qué necesitas
 
 - Una PS5 en una de las versiones de arriba
-- Una placa ESP32 con puerto USB: **ESP32-S2 Mini** (TENSTAR y similares), ESP32-S3, ESP32-C3 o ESP32-PICO
+- Una placa ESP32 con puerto USB: **ESP32-S2 Mini** (TENSTAR y similares), ESP32-S3, ESP32-C3, ESP32 DevKit (WROOM-32 / ESP-32S, la típica de 30 o 38 pines) o ESP32-PICO
 - Un cable USB de datos, no uno que solo carga
 - Chrome o Edge en un PC para grabar el firmware (Firefox y Safari no pueden)
 
@@ -43,6 +43,7 @@ También puedes descargar una [release](https://github.com/percdotdev/ps5-webkit
 | --- | --- | --- |
 | ESP32-S2 | `esp32-arduino.s2.merged.bin` | GPIO 15 |
 | ESP32-S3 | `esp32-arduino.s3.merged.bin` | GPIO 21 |
+| ESP32 DevKit | `esp32-arduino.devkit.merged.bin` | GPIO 2 |
 | ESP32-PICO | `esp32-arduino.pico.merged.bin` | GPIO 10 |
 | ESP32-C3 | `esp32-arduino.c3.merged.bin` | GPIO 8 |
 
@@ -68,7 +69,7 @@ python3 pack/pack_payload.py --web /ruta/a/ps5-webkit-autoloader
 make
 ```
 
-Solo Arduino-ESP32 **2.0.11**. Las imágenes quedan en `build/{pico,s2,s3,c3}/`. `make debug` / `make debug-s2` mantiene el USB serie para que puedas leer los logs.
+Solo Arduino-ESP32 **2.0.11**. Las imágenes quedan en `build/{pico,devkit,s2,s3,c3}/`. `make debug` / `make debug-s2` mantiene el USB serie para que puedas leer los logs.
 
 ## Problemas
 

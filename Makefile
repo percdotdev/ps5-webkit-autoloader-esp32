@@ -35,12 +35,14 @@ CERT_EMBEDDER := $(FIRMWARE_DIR)/tls/embed_cert.py
 DATA_PREPARER := $(PACK_DIR)/prepare-data.sh
 COMMON_BUILD_DIR := $(BUILD_DIR)/common
 PICO_BUILD_DIR := $(BUILD_DIR)/pico
+DEVKIT_BUILD_DIR := $(BUILD_DIR)/devkit
 S2_BUILD_DIR := $(BUILD_DIR)/s2
 S3_BUILD_DIR := $(BUILD_DIR)/s3
 C3_BUILD_DIR := $(BUILD_DIR)/c3
 ESP8266_BUILD_DIR := $(BUILD_DIR)/8266
 ESP8266_SKETCH_DIR := $(ESP8266_BUILD_DIR)/sketch/esp8266-arduino
 PICO_SKETCH_DIR := $(PICO_BUILD_DIR)/sketch/$(PROJECT_NAME)
+DEVKIT_SKETCH_DIR := $(DEVKIT_BUILD_DIR)/sketch/$(PROJECT_NAME)
 S2_SKETCH_DIR := $(S2_BUILD_DIR)/sketch/$(PROJECT_NAME)
 S3_SKETCH_DIR := $(S3_BUILD_DIR)/sketch/$(PROJECT_NAME)
 C3_SKETCH_DIR := $(C3_BUILD_DIR)/sketch/$(PROJECT_NAME)
@@ -141,6 +143,12 @@ PICO_APP := $(PICO_BUILD_DIR)/$(PROJECT_NAME).ino.bin
 PICO_BOOTLOADER := $(PICO_BUILD_DIR)/$(PROJECT_NAME).ino.bootloader.bin
 PICO_PARTITIONS := $(PICO_BUILD_DIR)/$(PROJECT_NAME).ino.partitions.bin
 PICO_MERGED := $(PICO_BUILD_DIR)/$(PROJECT_NAME).pico.merged.bin
+# ESP32 DevKit (WROOM-32 / ESP-32S, 30 or 38 pins): the PICO build with the LED on GPIO 2.
+# On WROOM modules GPIO 10 is wired to the flash chip, so it must stay untouched.
+DEVKIT_APP := $(DEVKIT_BUILD_DIR)/$(PROJECT_NAME).ino.bin
+DEVKIT_BOOTLOADER := $(DEVKIT_BUILD_DIR)/$(PROJECT_NAME).ino.bootloader.bin
+DEVKIT_PARTITIONS := $(DEVKIT_BUILD_DIR)/$(PROJECT_NAME).ino.partitions.bin
+DEVKIT_MERGED := $(DEVKIT_BUILD_DIR)/$(PROJECT_NAME).devkit.merged.bin
 S2_APP := $(S2_BUILD_DIR)/$(PROJECT_NAME).ino.bin
 S2_BOOTLOADER := $(S2_BUILD_DIR)/$(PROJECT_NAME).ino.bootloader.bin
 S2_PARTITIONS := $(S2_BUILD_DIR)/$(PROJECT_NAME).ino.partitions.bin
@@ -165,12 +173,12 @@ ESP8266_FLASH_SIZE := 4194304
 ESP8266_LITTLEFS_SIZE := 0x2FA000
 ESP8266_LITTLEFS_OFFSET := 0x100000
 
-.PHONY: all common debug debug-s2 pico pico-8m s2 s3 c3 8266 littlefs datadir minimize check check-minimize check-data check-littlefs check-8266 clean FORCE
+.PHONY: all common debug debug-s2 pico devkit pico-8m s2 s3 c3 8266 littlefs datadir minimize check check-minimize check-data check-littlefs check-8266 clean FORCE
 
-all: check $(PICO_MERGED) $(S2_MERGED) $(S3_MERGED) $(C3_MERGED)
+all: check $(PICO_MERGED) $(DEVKIT_MERGED) $(S2_MERGED) $(S3_MERGED) $(C3_MERGED)
 	@echo
 	echo "Build complete:"
-	ls -lh "$(PICO_MERGED)" "$(S2_MERGED)" $(S3_MERGED) $(C3_MERGED) "$(LITTLEFS_IMAGE)"
+	ls -lh "$(PICO_MERGED)" "$(DEVKIT_MERGED)" "$(S2_MERGED)" $(S3_MERGED) $(C3_MERGED) "$(LITTLEFS_IMAGE)"
 
 common: check $(SERVER_HEADER) $(DNS_LIBRARY_STAMP) $(LITTLEFS_IMAGE)
 	@ls -lh "$(SERVER_HEADER)" "$(LITTLEFS_IMAGE)"
@@ -183,6 +191,9 @@ debug-s2:
 
 pico: check $(PICO_MERGED)
 	@ls -lh "$(PICO_MERGED)"
+
+devkit: check $(DEVKIT_MERGED)
+	@ls -lh "$(DEVKIT_MERGED)"
 
 pico-8m: check $(PICO_8M_MERGED)
 	@ls -lh "$(PICO_8M_MERGED)" "$(PICO_8M_LITTLEFS_IMAGE)"
@@ -280,6 +291,19 @@ $(PICO_APP): $(ESP32_SKETCH_SOURCES) $(SERVER_HEADER) $(ESP32_PARTITIONS) Makefi
 	size=$$(stat -c %s "$(PICO_APP)")
 	test "$$size" -le "$(APP_PARTITION_SIZE)" || { echo "Error: Pico application exceeds the 1 MB partition: $$size bytes" >&2; exit 1; }
 
+$(DEVKIT_APP): $(ESP32_SKETCH_SOURCES) $(SERVER_HEADER) $(ESP32_PARTITIONS) Makefile $(DNS_LIBRARY_STAMP)
+	@$(call stage-esp32-sketch,$(DEVKIT_SKETCH_DIR),$(ESP32_PARTITIONS))
+	$(ARDUINO_CLI) compile \
+	    $(DNS_LIBRARY_ARG) \
+	    --fqbn "$(PICO_FQBN)" \
+	    --build-property "compiler.cpp.extra_flags=-DPORTAL_LED_PIN=2" \
+	    --output-dir "$(DEVKIT_BUILD_DIR)" \
+	    --build-property "build.partitions=partitions" \
+	    --build-property "build.filesystem=littlefs" \
+	    "$(DEVKIT_SKETCH_DIR)"
+	size=$$(stat -c %s "$(DEVKIT_APP)")
+	test "$$size" -le "$(APP_PARTITION_SIZE)" || { echo "Error: DevKit application exceeds the 1 MB partition: $$size bytes" >&2; exit 1; }
+
 $(S2_APP): $(ESP32_SKETCH_SOURCES) $(SERVER_HEADER) $(ESP32_PARTITIONS) Makefile $(DNS_LIBRARY_STAMP)
 	@$(call stage-esp32-sketch,$(S2_SKETCH_DIR),$(ESP32_PARTITIONS))
 	$(ARDUINO_CLI) compile \
@@ -366,6 +390,9 @@ endif
 
 $(PICO_MERGED): $(PICO_APP) $(LITTLEFS_IMAGE)
 	@$(call merge-esp32-image,esp32,$(PICO_MERGED),40m,4MB,0x1000,$(PICO_BOOTLOADER),$(PICO_PARTITIONS),$(PICO_APP),$(LITTLEFS_OFFSET),$(LITTLEFS_IMAGE),$(FLASH_SIZE),Pico image)
+
+$(DEVKIT_MERGED): $(DEVKIT_APP) $(LITTLEFS_IMAGE)
+	@$(call merge-esp32-image,esp32,$(DEVKIT_MERGED),40m,4MB,0x1000,$(DEVKIT_BOOTLOADER),$(DEVKIT_PARTITIONS),$(DEVKIT_APP),$(LITTLEFS_OFFSET),$(LITTLEFS_IMAGE),$(FLASH_SIZE),DevKit image)
 
 $(S2_MERGED): $(S2_APP) $(LITTLEFS_IMAGE)
 	@$(call merge-esp32-image,esp32s2,$(S2_MERGED),40m,4MB,0x1000,$(S2_BOOTLOADER),$(S2_PARTITIONS),$(S2_APP),$(LITTLEFS_OFFSET),$(LITTLEFS_IMAGE),$(FLASH_SIZE),S2 image)

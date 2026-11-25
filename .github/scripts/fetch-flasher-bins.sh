@@ -21,7 +21,7 @@ if [ -n "$pre" ]; then
   mkdir -p "$OUT/pre"
   gh release download "$pre_tag" --repo "$REPO" --pattern '*.merged.bin' --dir "$OUT/pre"
   # Only offer it when every board's image is there.
-  for b in pico s2 s3 c3; do
+  for b in pico devkit s2 s3 c3; do
     [ -s "$OUT/pre/esp32-arduino.$b.merged.bin" ] || { echo "pre-release $pre_tag lacks $b, not offering it"; rm -rf "$OUT/pre"; pre=""; break; }
   done
 fi

@@ -10,6 +10,7 @@ body:
         - ESP32-S2 Mini
         - ESP32-S3 DevKitC
         - ESP32-C3 Super Mini
+        - ESP32 DevKit (WROOM-32 / ESP-32S)
         - ESP32 PICO-KIT
         - Other (say which below)
     validations:

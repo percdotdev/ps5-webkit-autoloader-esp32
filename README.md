@@ -18,7 +18,7 @@ The page picks the exploit. On this board’s Wi-Fi it uses Relapse, except on 9
 ## What you need
 
 - A PS5 on one of the versions above
-- An ESP32 board with a USB port: **ESP32-S2 Mini** (TENSTAR and similar), ESP32-S3, ESP32-C3, or ESP32-PICO
+- An ESP32 board with a USB port: **ESP32-S2 Mini** (TENSTAR and similar), ESP32-S3, ESP32-C3, ESP32 DevKit (WROOM-32 / ESP-32S, the common 30- or 38-pin board), or ESP32-PICO
 - A USB cable that carries data, not charge-only
 - Chrome or Edge on a PC to write the firmware (Firefox and Safari cannot)
 
@@ -43,6 +43,7 @@ You can also download a [release](https://github.com/percdotdev/ps5-webkit-autol
 | --- | --- | --- |
 | ESP32-S2 | `esp32-arduino.s2.merged.bin` | GPIO 15 |
 | ESP32-S3 | `esp32-arduino.s3.merged.bin` | GPIO 21 |
+| ESP32 DevKit | `esp32-arduino.devkit.merged.bin` | GPIO 2 |
 | ESP32-PICO | `esp32-arduino.pico.merged.bin` | GPIO 10 |
 | ESP32-C3 | `esp32-arduino.c3.merged.bin` | GPIO 8 |
 
@@ -68,7 +69,7 @@ python3 pack/pack_payload.py --web /path/to/ps5-webkit-autoloader
 make
 ```
 
-Arduino-ESP32 **2.0.11** only. Images land in `build/{pico,s2,s3,c3}/`. `make debug` / `make debug-s2` keeps USB serial so you can read logs.
+Arduino-ESP32 **2.0.11** only. Images land in `build/{pico,devkit,s2,s3,c3}/`. `make debug` / `make debug-s2` keeps USB serial so you can read logs.
 
 ## Problems
 

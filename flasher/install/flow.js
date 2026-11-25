@@ -39,7 +39,7 @@ export function createFlow(render) {
     state.phase = "connecting";
     render();
     await openSession();
-    state.board = boardOf(session.imageKey);
+    state.board = boardOf(session.chip, state.board);
     state.phase = "connected";
     render();
   }
@@ -67,10 +67,10 @@ export function createFlow(render) {
 
   async function write() {
     let data = state.localFile?.data;
-    const name = state.localFile?.name || IMAGE_OF[session.imageKey];
+    const name = state.localFile?.name || IMAGE_OF[state.board];
     if (!data) {
       showProgress(t("phFetch"), null);
-      data = await fetchImage(imagePath(session.imageKey, state.channel));
+      data = await fetchImage(imagePath(state.board, state.channel));
     }
     logLine(`${name} · ${fmtBytes(data.byteLength)}`);
 
